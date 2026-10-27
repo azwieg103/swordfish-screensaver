@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install SDL2
-        run: vcpkg install sdl2:x64-windows
+        run: vcpkg install
       - name: Configure
         shell: pwsh
         run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
@@ -69,7 +69,7 @@ jobs:
             mkdir -p /home/builder/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
             tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.1.0.tar.gz --transform="s,^,swordfish-screensaver-0.1.0/," -C /src .
             cp /src/packaging/swordfish-screensaver.spec /home/builder/rpmbuild/SPECS/
-            rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
+            runuser -u builder -- rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
           '
       - uses: actions/upload-artifact@v4
