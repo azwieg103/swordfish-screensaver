@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Swordfish Screensaver — original plasma-trail concept art</title>
+  <desc id="desc">Seven dark monitors display luminous yellow-green plasma streaks with glowing cores and curved particle trails in a moody computer lab.</desc>
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#171a24"/><stop offset="1" stop-color="#090b10"/></linearGradient>
+    <linearGradient id="metal" x2="1" y2="1"><stop stop-color="#8b8e91"/><stop offset=".45" stop-color="#343943"/><stop offset="1" stop-color="#151922"/></linearGradient>
+    <linearGradient id="screen" x2="0" y2="1"><stop stop-color="#05080b"/><stop offset="1" stop-color="#000102"/></linearGradient>
+    <linearGradient id="plasma" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#fff5a1"/><stop offset=".25" stop-color="#dfff38"/><stop offset=".58" stop-color="#a8f42d"/><stop offset="1" stop-color="#ffbd3d" stop-opacity="0"/></linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8" result="blur"/><feColorMatrix in="blur" type="matrix" values="0.8 0 0 0 0.2 0 1 0 0 0.8 0 0 0 0 0.1 0 0 0 1 0" result="tint"/><feMerge><feMergeNode in="tint"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+    <g id="monitor">
+      <rect x="-4" y="-4" width="248" height="166" rx="9" fill="#030407" stroke="#5b6069" stroke-width="5"/>
+      <rect x="7" y="7" width="226" height="144" rx="3" fill="url(#screen)"/>
+      <path d="M120 162v18m-42 5h84" fill="none" stroke="url(#metal)" stroke-width="8" stroke-linecap="round"/>
+    </g>
+    <g id="streak">
+      <path d="M-75 18 C-30 4, 5 -8, 48 -30" fill="none" stroke="#9dff28" stroke-width="22" stroke-linecap="round" opacity=".22" filter="url(#soft)"/>
+      <path d="M-80 22 C-32 7, 8 -7, 53 -31" fill="none" stroke="url(#plasma)" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
+      <path d="M-79 21 C-33 8, 9 -8, 50 -30" fill="none" stroke="#eaff9a" stroke-width="2.6" stroke-linecap="round" opacity=".95"/>
+      <ellipse cx="-80" cy="21" rx="6" ry="3.4" fill="#fff7b0" filter="url(#glow)"/>
+    </g>
+  </defs>
+  <rect width="1200" height="560" fill="url(#bg)"/>
+  <ellipse cx="590" cy="465" rx="470" ry="55" fill="#9cff28" opacity=".06" filter="url(#soft)"/>
+  <path d="M0 70H1200M0 430H1200" stroke="#b1a5a0" stroke-opacity=".12"/>
+  <g opacity=".35" stroke="#d1bd9c" stroke-width="2"><path d="M70 0v430M1125 0v430M180 0v95M1020 0v95"/></g>
+  <g transform="translate(78 104) rotate(-4)"><use href="#monitor"/><g transform="translate(120 78) rotate(-15) scale(.76)"><use href="#streak"/></g></g>
+  <g transform="translate(340 42) rotate(1)"><use href="#monitor"/><g transform="translate(118 81) rotate(-8) scale(.92)"><use href="#streak"/></g></g>
+  <g transform="translate(635 78) rotate(3)"><use href="#monitor"/><g transform="translate(119 74) rotate(12) scale(.9)"><use href="#streak"/></g></g>
+  <g transform="translate(895 152) rotate(5)"><use href="#monitor"/><g transform="translate(121 75) rotate(38) scale(.86)"><use href="#streak"/></g></g>
+  <g transform="translate(135 292) rotate(2)"><use href="#monitor"/><g transform="translate(119 70) rotate(-34) scale(.88)"><use href="#streak"/></g></g>
+  <g transform="translate(430 275) rotate(-2)"><use href="#monitor"/><g transform="translate(120 75) rotate(4) scale(1.04)"><use href="#streak"/></g></g>
+  <g transform="translate(735 310) rotate(-3)"><use href="#monitor"/><g transform="translate(119 78) rotate(-22) scale(.8)"><use href="#streak"/></g></g>
+  <path d="M40 476h1120l-54 45H95z" fill="url(#metal)" opacity=".78"/>
+  <path d="M92 480h1016" stroke="#d3d7dc" stroke-opacity=".28" stroke-width="3"/>
+  <text x="600" y="540" text-anchor="middle" fill="#c7d3a6" font-family="monospace" font-size="14" letter-spacing="5" opacity=".8">S W O R D F I S H   /   PLASMA TRAIL STUDY</text>
+</svg>
