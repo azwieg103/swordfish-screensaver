@@ -39,8 +39,6 @@ is an application preview and does not yet integrate with desktop idle/lock serv
 %license LICENSE
 %doc README.md
 %{_bindir}/swordfish-screensaver
-%{_datadir}/doc/swordfish-screensaver/README.md
-%{_datadir}/doc/swordfish-screensaver/LICENSE
 
 %changelog
 * Tue Oct 27 2026 Open Source Contributors <noreply@example.invalid> - 0.1.0-2
