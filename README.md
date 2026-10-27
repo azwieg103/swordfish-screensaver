@@ -1,52 +1,78 @@
 # Swordfish Screensaver
 
-An open-source, hardware-accelerated plasma-trail screensaver for Linux, with AlmaLinux 10 RPM packaging as a primary goal.
+An independent, cross-platform animated plasma-trail screensaver concept for Linux and Windows.
 
-The visual target is a bright yellow-green plasma comet: a glowing core, fluid curved tail, and fading particles moving over a deep black background. The project aims to capture that *kind* of cinematic atmosphere with an original implementation and original artwork—not to reproduce or bundle footage, assets, or code from any film.
+The goal is an original, real-time visual: luminous yellow-green plasma comets with bright cores, curved tails, and fading particles on a dark background. This project draws on a broad science-fiction visual aesthetic; it does **not** reproduce movie frames, use extracted footage, copy proprietary assets, or claim affiliation with any film or studio.
 
-## Concept artwork
+![Original project concept artwork: monitors showing glowing plasma trails](assets/swordfish-concept.svg)
 
-![Original Swordfish Screensaver concept art: multiple dark displays showing glowing yellow-green plasma trails](assets/swordfish-concept.svg)
+The concept artwork above was created specifically for this repository and is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 
-The illustration above was created specifically for this repository as original vector artwork. It is not a screenshot or frame from a movie. The artwork is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+## Goals
 
-## Project goals
+- Cross-platform C++17 application for Linux and Windows.
+- SDL2 for window, input, and display handling; OpenGL for rendering.
+- Fullscreen mode, windowed preview, and optional monitor selection.
+- Procedurally generated trails—no third-party movie assets or downloaded visual content.
+- AlmaLinux 10 RPM packaging and Windows ZIP builds.
+- CI builds on Linux and Windows.
 
-- Smooth animated plasma trails with a luminous core, glow, and particle falloff.
-- Configurable colors, speed, trail length, and movement behavior.
-- Multi-monitor support.
-- Standalone preview mode for development and testing.
-- Linux desktop integration, with XScreenSaver-compatible invocation where feasible.
-- Reproducible source builds and RPM packaging targeting AlmaLinux 10 / EL10.
-- Automated build and test checks with GitHub Actions.
+## Current status
 
-## Status
+**Prototype.** This is an application preview, not yet a fully integrated OS screensaver. Native idle/lock integration is platform-specific and will be developed separately.
 
-**Early project setup.** The artwork and project direction are established; the animation engine, desktop integration, packaging, and automated RPM builds still need to be implemented and tested.
+## Build dependencies
 
-## Planned layout
+- CMake 3.20+
+- C++17 compiler
+- SDL2 development package
+- OpenGL development libraries / driver
 
-```text
-src/                    Animation engine and application
-assets/                 Original project artwork
-packaging/              RPM spec and packaging helpers
-tests/                  Tests
-.github/workflows/      CI and RPM build workflows
-CMakeLists.txt          Build configuration
+### Linux (AlmaLinux 10)
+
+```bash
+sudo dnf install -y cmake gcc-c++ make SDL2-devel mesa-libGL-devel
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+./build/swordfish-screensaver --windowed
 ```
 
-## Build and install
+Run fullscreen by omitting `--windowed`. Choose a display index (zero-based) with `--monitor 1`. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
 
-Build instructions and RPM installation steps will be added after the initial implementation and dependency list are verified on AlmaLinux 10. Until then, no prebuilt RPM is claimed to be available.
+### Windows
 
-## Contributing
+With Visual Studio 2022 and vcpkg installed:
 
-Issues and pull requests are welcome. Please include distribution/version details and logs for build or desktop-integration problems.
+```powershell
+vcpkg install sdl2:x64-windows
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+cmake --build build --config Release
+.`buildReleaseswordfish-screensaver.exe --windowed
+```
 
-## Name and affiliation
+Windows builds are planned in CI. The distributable ZIP must include the SDL2 runtime DLL alongside the executable.
 
-“Swordfish Screensaver” is an independent open-source project name referring to its visual concept. It is not affiliated with, endorsed by, or sponsored by the creators or distributors of the film *Swordfish*. No film footage, screenshots, logos, or extracted assets are included.
+## RPM packaging
 
-## License
+See `packaging/README.md` for RPM build instructions and dependencies.
 
-The application source is intended to be released under **GNU GPL-3.0-or-later**. The original concept SVG in `assets/swordfish-concept.svg` is separately dedicated to the public domain under **CC0 1.0**. License files for the source code will be included with the initial implementation.
+## Copyright and licensing
+
+- Application source: **GNU GPL-3.0-or-later** (see [LICENSE](LICENSE)).
+- Concept artwork: **CC0 1.0** (see [assets/swordfish-concept.svg](assets/swordfish-concept.svg)).
+- The animation is procedurally generated. Do not add movie screenshots, clips, extracted frames, logos, soundtrack, or code from unrelated screensavers without confirming rights and documenting the license.
+- “Swordfish” is used as a project name to describe the visual concept. This independent project is not affiliated with, endorsed by, or sponsored by any film studio or rights holder. If the name creates trademark confusion, the project can be renamed without changing the technical implementation.
+
+## Roadmap
+
+- [x] Original concept art
+- [x] Cross-platform SDL2/OpenGL prototype source
+- [x] CMake build configuration
+- [x] RPM spec scaffold
+- [x] Linux and Windows CI workflows
+- [ ] Verify builds on AlmaLinux 10 and Windows
+- [ ] Improve particle trails and settings
+- [ ] Native screensaver/idle integration for KDE and Windows
+- [ ] Published RPM/ZIP release artifacts
+
+Issues and pull requests are welcome. Include OS version, GPU/driver, build logs, and reproduction steps for bugs.
