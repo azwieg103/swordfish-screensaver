@@ -54,10 +54,10 @@ jobs:
       - name: Build RPM in AlmaLinux 10 container
         run: |
           docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" almalinux:10 bash -euxc '
-            dnf install -y rpm-build rpmdevtools cmake gcc-c++ make SDL2-devel mesa-libGL-devel tar gzip
+            dnf install -y rpm-build cmake gcc-c++ make SDL2-devel mesa-libGL-devel tar gzip
             useradd -m builder
             mkdir -p /home/builder/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-            tar -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.1.0.tar.gz --transform="s,^,swordfish-screensaver-0.1.0/," -C /src .
+            tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.1.0.tar.gz --transform="s,^,swordfish-screensaver-0.1.0/," -C /src .
             cp /src/packaging/swordfish-screensaver.spec /home/builder/rpmbuild/SPECS/
             rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             mkdir -p /rpms
