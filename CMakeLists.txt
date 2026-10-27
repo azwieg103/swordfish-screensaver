@@ -58,4 +58,3 @@ else()
 endif()
 
 install(TARGETS swordfish-screensaver RUNTIME DESTINATION bin)
-install(FILES README.md LICENSE DESTINATION share/doc/swordfish-screensaver)
