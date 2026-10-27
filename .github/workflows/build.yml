@@ -16,6 +16,8 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --parallel
+      - name: Smoke test
+        run: ./build/swordfish-screensaver --help
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
@@ -33,6 +35,8 @@ jobs:
         run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
       - name: Build
         run: cmake --build build --config Release
+      - name: Smoke test
+        run: .\\build\\Release\\swordfish-screensaver.exe --help
       - name: Package Windows ZIP
         shell: pwsh
         run: |
