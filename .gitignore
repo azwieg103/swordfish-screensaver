@@ -1,0 +1,12 @@
+/build/
+/cmake-build-*/
+/out/
+/dist/
+*.user
+*.suo
+*.pdb
+*.ilk
+*.obj
+*.o
+*.rpm
+*.tar.gz
