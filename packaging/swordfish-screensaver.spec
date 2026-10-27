@@ -2,7 +2,7 @@ Name:           swordfish-screensaver
 Version:        0.1.0
 Release:        1%{?dist}
 Summary:        Procedural plasma-trail animation preview
-License:        MIT
+License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  cmake >= 3.20
