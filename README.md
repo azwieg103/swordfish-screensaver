@@ -2,36 +2,33 @@
 
 An independent, cross-platform animated plasma-trail screensaver concept for Linux and Windows.
 
-The goal is an original, real-time visual: luminous yellow-green plasma comets with bright cores, curved tails, and fading particles on a dark background. This project draws on a broad science-fiction visual aesthetic; it does **not** reproduce movie frames, use extracted footage, copy proprietary assets, or claim affiliation with any film or studio.
+The goal is an original, real-time visual: luminous yellow-green plasma comets with bright cores, curved tails, and fading particles on a dark background. This project uses a broad science-fiction visual aesthetic; it does **not** reproduce movie frames, use extracted footage, copy proprietary assets, or claim affiliation with any film or studio.
 
 ![Original project concept artwork: monitors showing glowing plasma trails](assets/swordfish-concept.svg)
 
 The concept artwork above was created specifically for this repository and is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 
-## Goals
-
-- Cross-platform C++17 application for Linux and Windows.
-- SDL2 for window, input, and display handling; OpenGL for rendering.
-- Fullscreen mode, windowed preview, and optional monitor selection.
-- Procedurally generated trails—no third-party movie assets or downloaded visual content.
-- AlmaLinux 10 RPM packaging and Windows ZIP builds.
-- CI builds on Linux and Windows.
-
 ## Current status
 
-**Prototype.** This is an application preview, not yet a fully integrated OS screensaver. Native idle/lock integration is platform-specific and will be developed separately.
+**Working prototype.** The standalone application has been built and tested on AlmaLinux 10.2 and packaged as an RPM. It is not yet integrated with OS idle/lock services.
 
-## Build dependencies
+## Download releases
 
-- CMake 3.20+
-- C++17 compiler
-- SDL2 development package
-- OpenGL development libraries / driver
+Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include an AlmaLinux 10 RPM and a Windows x64 ZIP. Until a release is published, use the source build instructions below.
 
-### Linux (AlmaLinux 10)
+## Build on AlmaLinux 10
+
+Install the compiler, CMake, OpenGL and X11 development files:
 
 ```bash
-sudo dnf install -y cmake gcc-c++ make SDL2-devel mesa-libGL-devel
+sudo dnf install -y cmake gcc-c++ git make mesa-libGL-devel \
+  libX11-devel libXext-devel libXrandr-devel libXrender-devel \
+  libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel
+```
+
+SDL2 is used from the system if available. Otherwise CMake downloads and builds pinned SDL2 release `2.30.11`; the first configure therefore needs internet access.
+
+```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 ./build/swordfish-screensaver --windowed
@@ -39,22 +36,32 @@ cmake --build build --parallel
 
 Run fullscreen by omitting `--windowed`. Choose a display index (zero-based) with `--monitor 1`. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
 
-### Windows
+## Build an RPM on AlmaLinux 10
 
-With Visual Studio 2022 and vcpkg installed:
+From the repository root:
 
-```powershell
-vcpkg install sdl2:x64-windows
-cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-cmake --build build --config Release
-.`buildReleaseswordfish-screensaver.exe --windowed
+```bash
+sudo dnf install -y rpm-build rpmdevtools
+mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+git archive --format=tar.gz --prefix=swordfish-screensaver-0.1.0/ HEAD \
+  > ~/rpmbuild/SOURCES/swordfish-screensaver-0.1.0.tar.gz
+cp packaging/swordfish-screensaver.spec ~/rpmbuild/SPECS/
+rpmbuild -ba ~/rpmbuild/SPECS/swordfish-screensaver.spec
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/swordfish-screensaver-0.1.0-*.el10.x86_64.rpm
 ```
 
-Windows builds are planned in CI. The distributable ZIP must include the SDL2 runtime DLL alongside the executable.
+See [packaging/README.md](packaging/README.md) for details. The RPM build fetches pinned SDL2 source if system SDL2 development files are unavailable.
 
-## RPM packaging
+## Windows
 
-See `packaging/README.md` for RPM build instructions and dependencies.
+A Windows x64 build is produced by GitHub Actions using Visual Studio and vcpkg. Download the `swordfish-windows-x64.zip` asset from a published release, extract it, and run `swordfish-screensaver.exe`. The ZIP includes the SDL2 runtime DLL.
+
+## Controls
+
+- `--windowed`: show a resizable preview window
+- `--monitor N`: use display N (zero-based)
+- **Esc / Q**: quit
+- **F**: toggle fullscreen
 
 ## Copyright and licensing
 
@@ -68,11 +75,10 @@ See `packaging/README.md` for RPM build instructions and dependencies.
 - [x] Original concept art
 - [x] Cross-platform SDL2/OpenGL prototype source
 - [x] CMake build configuration
-- [x] RPM spec scaffold
-- [x] Linux and Windows CI workflows
-- [ ] Verify builds on AlmaLinux 10 and Windows
-- [ ] Improve particle trails and settings
+- [x] RPM built and tested on AlmaLinux 10.2
+- [x] CI build definitions for Linux, Windows, and AlmaLinux 10 RPM
+- [ ] Verify all hosted CI jobs pass
+- [ ] Publish RPM/ZIP release assets
 - [ ] Native screensaver/idle integration for KDE and Windows
-- [ ] Published RPM/ZIP release artifacts
 
 Issues and pull requests are welcome. Include OS version, GPU/driver, build logs, and reproduction steps for bugs.
