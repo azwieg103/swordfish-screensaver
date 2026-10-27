@@ -101,14 +101,16 @@ void render(float time, int width, int height) {
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    // Keep the motion proportions stable across wide and tall displays.
-    const double aspect = height > 0 ? static_cast<double>(width) / static_cast<double>(height) : 1.0;
-    if (aspect >= 1.0) glOrtho(-aspect, aspect, -1.0, 1.0, -1.0, 1.0);
-    else glOrtho(-1.0, 1.0, -1.0 / aspect, 1.0 / aspect, -1.0, 1.0);
+    // Use normalized coordinates so the trails occupy a consistent fraction of each display.
+    (void)width;
+    (void)height;
+    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glDisable(GL_DEPTH_TEST);
     for (int i = 0; i < 4; ++i) {
         const float phase = static_cast<float>(i) * 1.81f;
@@ -120,6 +122,9 @@ void render(float time, int width, int height) {
 } // namespace
 
 int main(int argc, char** argv) {
+#ifdef SDL_MAIN_HANDLED
+    SDL_SetMainReady();
+#endif
     const Options options = parseArgs(argc, argv);
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << '\n';
