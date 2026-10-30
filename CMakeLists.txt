@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(swordfish-screensaver VERSION 0.2.0 LANGUAGES CXX)
+project(swordfish-screensaver VERSION 0.2.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,3 +58,6 @@ else()
 endif()
 
 install(TARGETS swordfish-screensaver RUNTIME DESTINATION bin)
+
+install(PROGRAMS scripts/swordfish-idle DESTINATION bin)
+install(FILES packaging/swordfish-idle.desktop DESTINATION share/applications)
