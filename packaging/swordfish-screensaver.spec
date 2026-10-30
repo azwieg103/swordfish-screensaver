@@ -1,7 +1,7 @@
 Name:           swordfish-screensaver
-Version:        0.1.0
-Release:        2%{?dist}
-Summary:        Procedural plasma-trail animation preview
+Version:        0.2.0
+Release:        1%{?dist}
+Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
 Source0:        %{name}-%{version}.tar.gz
@@ -20,10 +20,10 @@ BuildRequires:  libXcursor-devel
 BuildRequires:  libXinerama-devel
 
 %description
-An independent cross-platform SDL2/OpenGL application that renders original,
-procedurally generated plasma trails. SDL2 is built from a pinned upstream
-release when a system SDL2 development package is unavailable. This prototype
-is an application preview and does not yet integrate with desktop idle/lock services.
+An independent cross-platform SDL2/OpenGL application that renders an original
+circular plasma beam across the virtual desktop. Each monitor displays its
+portion of one synchronized animation. SDL2 is built from a pinned upstream
+release when a system SDL2 development package is unavailable.
 
 %prep
 %autosetup
@@ -41,7 +41,5 @@ is an application preview and does not yet integrate with desktop idle/lock serv
 %{_bindir}/swordfish-screensaver
 
 %changelog
-* Tue Oct 27 2026 Open Source Contributors <noreply@example.invalid> - 0.1.0-2
-- Build with pinned SDL2 source when system SDL2 development files are unavailable.
-* Tue Oct 27 2026 Open Source Contributors <noreply@example.invalid> - 0.1.0-1
-- Initial cross-platform prototype and RPM packaging.
+* Fri Oct 30 2026 Open Source Contributors <noreply@example.invalid> - 0.2.0-1
+- Add synchronized multi-monitor circular plasma animation and green color presets.
