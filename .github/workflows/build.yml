@@ -48,7 +48,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/Release/swordfish-screensaver.exe dist/
-          Copy-Item "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin/SDL2.dll" dist/
+          Copy-Item build/Release/SDL2.dll dist/
           Copy-Item README.md, LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath swordfish-windows-x64.zip
       - uses: actions/upload-artifact@v4
@@ -69,6 +69,7 @@ jobs:
             mkdir -p /home/builder/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
             tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.2.0.tar.gz --transform="s,^,swordfish-screensaver-0.2.0/," -C /src .
             cp /src/packaging/swordfish-screensaver.spec /home/builder/rpmbuild/SPECS/
+            chown -R builder:builder /home/builder/rpmbuild
             runuser -u builder -- rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
           '
