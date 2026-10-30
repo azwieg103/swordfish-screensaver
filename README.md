@@ -10,7 +10,7 @@ The concept artwork above was created specifically for this repository and is de
 
 ## Current status
 
-**0.2.0 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. It is not yet integrated with OS idle/lock services.
+**0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux adds an optional X11 idle launcher for KDE; KDE's own screen locker remains responsible for password-protected locking.
 
 ## Download releases
 
@@ -36,6 +36,28 @@ cmake --build build --parallel
 
 Run fullscreen by omitting `--windowed`; fullscreen uses all connected monitors. Use `--monitor 1` to limit fullscreen to one zero-based display. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
 
+## KDE X11 idle launch
+
+The optional idle launcher starts the full multi-monitor Swordfish application after inactivity and closes it as soon as keyboard or mouse activity is detected. It uses `xprintidle`, so this integration is for KDE on X11 (not Wayland). It does **not** replace or disable KDE's secure screen locker.
+
+Install `xprintidle` using your distribution's package manager if available. Then enable the launcher for your user:
+
+```bash
+mkdir -p ~/.config/autostart ~/.config
+cp /usr/share/applications/swordfish-idle.desktop ~/.config/autostart/
+```
+
+Configure the inactivity delay and palette in `~/.config/swordfish-screensaver.conf`:
+
+```bash
+IDLE_TIMEOUT_MS=300000
+GREEN=classic
+```
+
+The default delay is five minutes. For example, set `IDLE_TIMEOUT_MS=600000` for ten minutes. Supported palettes are `classic`, `lime`, `emerald`, and `teal`. Log out and back in (or start `/usr/bin/swordfish-idle` manually) to activate it. Remove `~/.config/autostart/swordfish-idle.desktop` to disable autostart.
+
+In KDE System Settings, keep **Screen Locking** enabled and set its timeout longer than the Swordfish idle delay. For example, with Swordfish at five minutes, set KDE to lock at ten minutes. This leaves the password-protected KDE lock screen in control of security.
+
 ## Green palettes
 
 Choose a built-in green palette:
@@ -59,11 +81,11 @@ From the repository root:
 ```bash
 sudo dnf install -y rpm-build rpmdevtools
 mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-git archive --format=tar.gz --prefix=swordfish-screensaver-0.2.0/ HEAD \
-  > ~/rpmbuild/SOURCES/swordfish-screensaver-0.2.0.tar.gz
+git archive --format=tar.gz --prefix=swordfish-screensaver-0.2.1/ HEAD \
+  > ~/rpmbuild/SOURCES/swordfish-screensaver-0.2.1.tar.gz
 cp packaging/swordfish-screensaver.spec ~/rpmbuild/SPECS/
 rpmbuild -ba ~/rpmbuild/SPECS/swordfish-screensaver.spec
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/swordfish-screensaver-0.2.0-*.el10.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/swordfish-screensaver-0.2.1-*.el10.x86_64.rpm
 ```
 
 See [packaging/README.md](packaging/README.md) for details. The RPM build fetches pinned SDL2 source if system SDL2 development files are unavailable.
@@ -92,11 +114,11 @@ A Windows x64 build is produced by GitHub Actions using Visual Studio and vcpkg.
 - [x] Original concept art
 - [x] Cross-platform SDL2/OpenGL prototype source
 - [x] CMake build configuration
-- [x] RPM built and tested on AlmaLinux 10.2 (0.1.0)
-- [x] CI build definitions for Linux, Windows, and AlmaLinux 10 RPM
-- [ ] Test 0.2.0 multi-monitor behavior on physical displays
+- [x] RPM build for AlmaLinux 10
+- [x] Synchronized multi-monitor animation and green palettes
+- [ ] Test KDE X11 idle launcher on physical desktop
 - [ ] Verify all hosted CI jobs pass
-- [ ] Publish RPM/ZIP release assets
-- [ ] Native screensaver/idle integration for KDE and Windows
+- [ ] Publish 0.2.1 RPM/ZIP release assets
+- [ ] Native screensaver/idle integration for KDE Wayland and Windows
 
 Issues and pull requests are welcome. Include OS version, GPU/driver, build logs, and reproduction steps for bugs.
