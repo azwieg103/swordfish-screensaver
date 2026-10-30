@@ -14,10 +14,28 @@ if [[ -r "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
 fi
 
-if ! command -v xprintidle >/dev/null 2>&1; then
-    echo "Swordfish idle launcher requires xprintidle (X11)." >&2
+idle_backend=""
+if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gdbus >/dev/null 2>&1; then
+    idle_backend="gnome"
+elif [[ "${XDG_SESSION_TYPE:-}" == "x11" ]] && command -v xprintidle >/dev/null 2>&1; then
+    idle_backend="x11"
+else
+    echo "No supported idle detector found. GNOME uses gdbus; KDE/X11 uses xprintidle." >&2
     exit 1
 fi
+
+get_idle_ms() {
+    if [[ "$idle_backend" == "gnome" ]]; then
+        local reply
+        reply=$(gdbus call --session --dest org.gnome.Mutter.IdleMonitor \
+            --object-path /org/gnome/Mutter/IdleMonitor/Core \
+            --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null) || return 1
+        # gdbus prints a tuple such as (uint64 123456,); return its integer.
+        sed -E 's/[^0-9]*([0-9]+).*/\\1/' <<< "$reply"
+    else
+        xprintidle
+    fi
+}
 if [[ ! -x "$APP" ]]; then
     echo "Swordfish executable not found at $APP" >&2
     exit 1
@@ -39,7 +57,7 @@ stop_child() {
 trap 'stop_child; exit 0' INT TERM HUP
 
 while true; do
-    idle_ms=$(xprintidle 2>/dev/null || echo 0)
+    idle_ms=$(get_idle_ms 2>/dev/null || echo 0)
     if [[ "$idle_ms" =~ ^[0-9]+$ ]] && (( idle_ms >= IDLE_TIMEOUT_MS )); then
         "$APP" --green "$GREEN" &
         child=$!
@@ -47,7 +65,7 @@ while true; do
         # resets X11 idle time; terminate the animation immediately.
         while kill -0 "$child" 2>/dev/null; do
             sleep "$POLL_SECONDS"
-            idle_ms=$(xprintidle 2>/dev/null || echo 0)
+            idle_ms=$(get_idle_ms 2>/dev/null || echo 0)
             if [[ ! "$idle_ms" =~ ^[0-9]+$ ]] || (( idle_ms < IDLE_TIMEOUT_MS )); then
                 stop_child
                 break
