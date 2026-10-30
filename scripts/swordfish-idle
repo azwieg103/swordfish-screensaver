@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Launch Swordfish after a period of X11 inactivity, and stop it on input.
+set -u
+
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/swordfish-screensaver.conf"
+IDLE_TIMEOUT_MS=300000
+GREEN=classic
+APP=/usr/bin/swordfish-screensaver
+POLL_SECONDS=1
+
+if [[ -r "$CONFIG_FILE" ]]; then
+    # This is a user-owned shell config file; keep it simple and document its variables.
+    # shellcheck disable=SC1090
+    source "$CONFIG_FILE"
+fi
+
+if ! command -v xprintidle >/dev/null 2>&1; then
+    echo "Swordfish idle launcher requires xprintidle (X11)." >&2
+    exit 1
+fi
+if [[ ! -x "$APP" ]]; then
+    echo "Swordfish executable not found at $APP" >&2
+    exit 1
+fi
+if ! [[ "$IDLE_TIMEOUT_MS" =~ ^[0-9]+$ ]] || (( IDLE_TIMEOUT_MS < 10000 )); then
+    echo "IDLE_TIMEOUT_MS must be an integer of at least 10000." >&2
+    exit 2
+fi
+case "$GREEN" in classic|lime|emerald|teal) ;; *) echo "Invalid GREEN palette: $GREEN" >&2; exit 2 ;; esac
+
+child=""
+stop_child() {
+    if [[ -n "$child" ]] && kill -0 "$child" 2>/dev/null; then
+        kill -TERM "$child" 2>/dev/null || true
+        wait "$child" 2>/dev/null || true
+    fi
+    child=""
+}
+trap 'stop_child; exit 0' INT TERM HUP
+
+while true; do
+    idle_ms=$(xprintidle 2>/dev/null || echo 0)
+    if [[ "$idle_ms" =~ ^[0-9]+$ ]] && (( idle_ms >= IDLE_TIMEOUT_MS )); then
+        "$APP" --green "$GREEN" &
+        child=$!
+        # Stay in the foreground while Swordfish is visible. Any user input
+        # resets X11 idle time; terminate the animation immediately.
+        while kill -0 "$child" 2>/dev/null; do
+            sleep "$POLL_SECONDS"
+            idle_ms=$(xprintidle 2>/dev/null || echo 0)
+            if [[ ! "$idle_ms" =~ ^[0-9]+$ ]] || (( idle_ms < IDLE_TIMEOUT_MS )); then
+                stop_child
+                break
+            fi
+        done
+        child=""
+    else
+        sleep "$POLL_SECONDS"
+    fi
+done
