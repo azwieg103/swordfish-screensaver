@@ -1,5 +1,5 @@
 Name:           swordfish-screensaver
-Version:        0.2.0
+Version:        0.2.1
 Release:        1%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
@@ -20,10 +20,8 @@ BuildRequires:  libXcursor-devel
 BuildRequires:  libXinerama-devel
 
 %description
-An independent cross-platform SDL2/OpenGL application that renders an original
-circular plasma beam across the virtual desktop. Each monitor displays its
-portion of one synchronized animation. SDL2 is built from a pinned upstream
-release when a system SDL2 development package is unavailable.
+An independent SDL2/OpenGL multi-monitor circular plasma animation with an
+optional KDE X11 idle launcher. KDE continues to manage secure screen locking.
 
 %prep
 %autosetup
@@ -39,7 +37,9 @@ release when a system SDL2 development package is unavailable.
 %license LICENSE
 %doc README.md
 %{_bindir}/swordfish-screensaver
+%{_bindir}/swordfish-idle
+%{_datadir}/applications/swordfish-idle.desktop
 
 %changelog
-* Fri Oct 30 2026 Open Source Contributors <noreply@example.invalid> - 0.2.0-1
-- Add synchronized multi-monitor circular plasma animation and green color presets.
+* Fri Oct 30 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-1
+- Add opt-in KDE X11 idle launcher and autostart desktop entry.
