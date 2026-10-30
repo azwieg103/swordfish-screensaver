@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace {
@@ -15,96 +14,96 @@ constexpr double kPi = 3.14159265358979323846;
 struct Options {
     bool windowed = false;
     int monitor = -1;
+    float greenR = 0.28f, greenG = 1.0f, greenB = 0.035f;
+};
+
+struct Display {
+    SDL_Rect bounds{};
+    SDL_Window* window = nullptr;
+    SDL_GLContext context = nullptr;
 };
 
 Options parseArgs(int argc, char** argv) {
-    Options options;
+    Options o;
     for (int i = 1; i < argc; ++i) {
         const std::string arg(argv[i]);
-        if (arg == "--windowed") {
-            options.windowed = true;
-        } else if (arg == "--monitor" && i + 1 < argc) {
-            options.monitor = std::max(0, std::atoi(argv[++i]));
+        if (arg == "--windowed") o.windowed = true;
+        else if (arg == "--monitor" && i + 1 < argc) o.monitor = std::max(0, std::atoi(argv[++i]));
+        else if (arg == "--green" && i + 1 < argc) {
+            const std::string preset(argv[++i]);
+            if (preset == "lime") o.greenR = 0.62f, o.greenG = 1.0f, o.greenB = 0.015f;
+            else if (preset == "emerald") o.greenR = 0.02f, o.greenG = 0.88f, o.greenB = 0.34f;
+            else if (preset == "teal") o.greenR = 0.02f, o.greenG = 0.92f, o.greenB = 0.72f;
+            else if (preset == "classic") o.greenR = 0.28f, o.greenG = 1.0f, o.greenB = 0.035f;
+            else {
+                std::cerr << "Unknown green preset: " << preset << "\n";
+                std::exit(2);
+            }
         } else if (arg == "--help" || arg == "-h") {
-            std::cout << "Swordfish Screensaver - original procedural plasma animation\n"
-                         "Usage: swordfish-screensaver [--windowed] [--monitor N]\n"
-                         "  --windowed   Show a resizable preview window\n"
-                         "  --monitor N  Use display N (zero-based)\n"
-                         "Keys: Esc/Q quit, F toggle fullscreen\n";
+            std::cout << "Swordfish Screensaver 0.2.0\n"
+                         "Usage: swordfish-screensaver [--windowed] [--monitor N] [--green classic|lime|emerald|teal]\n"
+                         "Fullscreen uses every monitor; --monitor N limits fullscreen to one display.\n"
+                         "--windowed opens a preview. Keys: Esc/Q quit, F toggle fullscreen.\n";
             std::exit(0);
         } else {
             std::cerr << "Unknown option: " << arg << "\nUse --help for options.\n";
             std::exit(2);
         }
     }
-    return options;
+    return o;
 }
 
-void drawTrail(float time, float cx, float cy, float phase, int segments) {
-    const float drift = 0.16f * std::sin(time * 0.31f + phase);
-    const float sweep = 0.34f * std::sin(time * 0.22f + phase * 1.7f);
-    const float direction = std::sin(time * 0.17f + phase) > 0.0f ? 1.0f : -1.0f;
-    const float length = 0.26f + 0.14f * (0.5f + 0.5f * std::sin(time * 0.73f + phase));
-    const float headX = cx + sweep;
-    const float headY = cy + drift;
+void vertex(float x, float y) { glVertex2f(x, y); }
 
-    std::vector<std::pair<float, float>> points;
-    points.reserve(static_cast<std::size_t>(segments + 1));
-    for (int i = 0; i <= segments; ++i) {
-        const float u = static_cast<float>(i) / static_cast<float>(segments);
-        const float back = u * length;
-        const float x = headX - direction * back;
-        const float curve = std::sin(u * static_cast<float>(kPi) * 1.2f + time * 0.8f + phase) * 0.09f * u;
-        const float y = headY + curve + back * 0.22f * std::sin(time * 0.4f + phase);
-        points.emplace_back(x, y);
-    }
-
-    // Three additive layers create a soft halo, colored body, and hot inner filament.
-    for (int layer = 0; layer < 3; ++layer) {
-        const float width = layer == 0 ? 4.5f : layer == 1 ? 2.2f : 1.0f;
-        glLineWidth(width);
-        glBegin(GL_LINE_STRIP);
-        for (std::size_t i = 0; i < points.size(); ++i) {
-            const float fade = 1.0f - static_cast<float>(i) / static_cast<float>(points.size());
-            if (layer == 0) glColor4f(0.38f, 1.0f, 0.025f, 0.025f + 0.12f * fade);
-            if (layer == 1) glColor4f(0.72f, 1.0f, 0.08f, 0.05f + 0.36f * fade);
-            if (layer == 2) glColor4f(1.0f, 0.98f, 0.70f, 0.12f + 0.82f * fade);
-            glVertex2f(points[i].first, points[i].second);
-        }
-        glEnd();
-    }
-
-    // Procedural glowing head, generated entirely in code.
-    const float pulse = 0.009f + 0.004f * (0.5f + 0.5f * std::sin(time * 4.0f + phase));
-    for (int ring = 7; ring >= 1; --ring) {
-        const float radius = pulse * static_cast<float>(ring);
-        const float alpha = 0.012f + 0.022f * static_cast<float>(8 - ring);
-        glColor4f(0.70f, 1.0f, 0.08f, alpha);
+void glowDot(float x, float y, float radius, float r, float g, float b) {
+    for (int ring = 8; ring >= 1; --ring) {
+        const float rr = radius * static_cast<float>(ring);
+        glColor4f(r, g, b, 0.012f + 0.018f * static_cast<float>(8 - ring));
         glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(headX, headY);
-        for (int j = 0; j <= 32; ++j) {
-            const float angle = static_cast<float>(j) * static_cast<float>(2.0 * kPi / 32.0);
-            glVertex2f(headX + std::cos(angle) * radius, headY + std::sin(angle) * radius);
+        vertex(x, y);
+        for (int j = 0; j <= 36; ++j) {
+            const float a = static_cast<float>(j) * static_cast<float>(2.0 * kPi / 36.0);
+            vertex(x + std::cos(a) * rr, y + std::sin(a) * rr);
         }
         glEnd();
     }
-    glPointSize(4.0f);
-    glColor4f(1.0f, 1.0f, 0.82f, 0.98f);
-    glBegin(GL_POINTS);
-    glVertex2f(headX, headY);
-    glEnd();
 }
 
-void render(float time, int width, int height) {
-    glViewport(0, 0, width, height);
-    glClearColor(0.004f, 0.006f, 0.009f, 1.0f);
+void drawBeam(double angle, double direction, float rx, float ry, const Options& o) {
+    const float cx = rx * 0.0f;
+    (void)cx;
+    const float headX = rx * std::cos(static_cast<float>(angle));
+    const float headY = ry * std::sin(static_cast<float>(angle));
+    // A tapered arc trail follows the moving pulse around the shared desktop orbit.
+    for (int layer = 0; layer < 3; ++layer) {
+        glLineWidth(layer == 0 ? 13.0f : layer == 1 ? 5.0f : 1.8f);
+        glBegin(GL_LINE_STRIP);
+        for (int i = 0; i <= 150; ++i) {
+            const float u = static_cast<float>(i) / 150.0f;
+            const double a = angle - direction * (0.95 * u);
+            const float fade = 1.0f - u;
+            if (layer == 0) glColor4f(o.greenR, o.greenG, o.greenB, 0.012f + 0.075f * fade);
+            if (layer == 1) glColor4f(o.greenR, o.greenG, o.greenB, 0.025f + 0.25f * fade);
+            if (layer == 2) glColor4f(0.82f, 1.0f, 0.76f, 0.08f + 0.76f * fade);
+            vertex(rx * std::cos(static_cast<float>(a)), ry * std::sin(static_cast<float>(a)));
+        }
+        glEnd();
+    }
+    glowDot(headX, headY, 0.009f, o.greenR, o.greenG, o.greenB);
+    glPointSize(4.0f);
+    glColor4f(1.0f, 1.0f, 0.88f, 1.0f);
+    glBegin(GL_POINTS); vertex(headX, headY); glEnd();
+}
+
+void render(double t, int drawableW, int drawableH, const SDL_Rect& local,
+            const SDL_Rect& virtualBounds, const Options& o) {
+    glViewport(0, 0, drawableW, drawableH);
+    glClearColor(0.002f, 0.004f, 0.008f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    // Use normalized coordinates so the trails occupy a consistent fraction of each display.
-    (void)width;
-    (void)height;
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+    // Every monitor renders from the same virtual-desktop coordinate system.
+    glOrtho(local.x, local.x + local.w, local.y + local.h, local.y, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glEnable(GL_BLEND);
@@ -112,11 +111,31 @@ void render(float time, int width, int height) {
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glDisable(GL_DEPTH_TEST);
-    for (int i = 0; i < 4; ++i) {
-        const float phase = static_cast<float>(i) * 1.81f;
-        const float y = -0.58f + static_cast<float>(i) * 0.37f;
-        drawTrail(time, 0.02f * std::sin(time * 0.11f + phase), y, phase, 96);
+
+    const double cx = virtualBounds.x + virtualBounds.w * 0.5;
+    const double cy = virtualBounds.y + virtualBounds.h * 0.5;
+    const float scale = static_cast<float>(std::min(virtualBounds.w, virtualBounds.h));
+    const float rx = static_cast<float>(virtualBounds.w) * 0.43f;
+    const float ry = static_cast<float>(virtualBounds.h) * 0.43f;
+    const double rotations = t / 5.0; // one revolution every five seconds
+    const int leg = static_cast<int>(std::floor(rotations / 5.0));
+    const double within = rotations - leg * 5.0;
+    const double direction = (leg % 2 == 0) ? 1.0 : -1.0;
+    const double angle = direction > 0 ? within * (2.0 * kPi) : (5.0 - within) * (2.0 * kPi);
+    // Smoothly morph from one pulse to two, four, then back to one.
+    const double cycle = std::fmod(t, 32.0);
+    const double splitWave = (cycle < 8.0 || cycle >= 24.0) ? 0.0 :
+                             (cycle < 12.0 ? (cycle - 8.0) / 4.0 :
+                              cycle < 20.0 ? 1.0 : (24.0 - cycle) / 4.0);
+    const int beams = splitWave < 0.34 ? 1 : splitWave < 0.84 ? 2 : 4;
+    (void)scale;
+    glPushMatrix();
+    glTranslatef(static_cast<float>(cx), static_cast<float>(cy), 0.0f);
+    for (int i = 0; i < beams; ++i) {
+        const double a = angle + (2.0 * kPi * i / beams);
+        drawBeam(a, direction, rx, ry, o);
     }
+    glPopMatrix();
     glDisable(GL_BLEND);
 }
 } // namespace
@@ -130,81 +149,90 @@ int main(int argc, char** argv) {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << '\n';
         return 1;
     }
-    const int displayCount = SDL_GetNumVideoDisplays();
-    if (displayCount < 1) {
-        std::cerr << "No displays found: " << SDL_GetError() << '\n';
-        SDL_Quit();
-        return 1;
-    }
-    const int display = options.monitor < 0 ? 0 : std::min(options.monitor, displayCount - 1);
-    SDL_Rect bounds{};
-    if (SDL_GetDisplayBounds(display, &bounds) != 0) {
-        std::cerr << "Cannot query display: " << SDL_GetError() << '\n';
-        SDL_Quit();
-        return 1;
-    }
+    const int count = SDL_GetNumVideoDisplays();
+    if (count < 1) { std::cerr << "No displays found: " << SDL_GetError() << '\n'; SDL_Quit(); return 1; }
 
+    std::vector<Display> displays;
+    SDL_Rect virtualBounds{};
+    const int first = options.monitor < 0 ? 0 : std::min(options.monitor, count - 1);
+    const int last = options.monitor < 0 ? count : first + 1;
+    for (int i = first; i < last; ++i) {
+        Display d;
+        if (SDL_GetDisplayBounds(i, &d.bounds) != 0) {
+            std::cerr << "Cannot query display " << i << ": " << SDL_GetError() << '\n';
+            continue;
+        }
+        if (displays.empty()) virtualBounds = d.bounds;
+        else {
+            const int left = std::min(virtualBounds.x, d.bounds.x);
+            const int top = std::min(virtualBounds.y, d.bounds.y);
+            const int right = std::max(virtualBounds.x + virtualBounds.w, d.bounds.x + d.bounds.w);
+            const int bottom = std::max(virtualBounds.y + virtualBounds.h, d.bounds.y + d.bounds.h);
+            virtualBounds = {left, top, right - left, bottom - top};
+        }
+        displays.push_back(d);
+    }
+    if (displays.empty()) { SDL_Quit(); return 1; }
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
-    Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI;
-    int x = bounds.x, y = bounds.y, width = bounds.w, height = bounds.h;
-    if (options.windowed) {
-        flags |= SDL_WINDOW_RESIZABLE;
-        width = 1100;
-        height = 650;
-        x = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
-        y = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
-    } else {
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    for (std::size_t i = 0; i < displays.size(); ++i) {
+        auto& d = displays[i];
+        int x = d.bounds.x, y = d.bounds.y, w = d.bounds.w, h = d.bounds.h;
+        Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI;
+        if (options.windowed) {
+            if (i > 0) continue;
+            flags |= SDL_WINDOW_RESIZABLE;
+            w = 1100; h = 650;
+            x = SDL_WINDOWPOS_CENTERED_DISPLAY(first);
+            y = SDL_WINDOWPOS_CENTERED_DISPLAY(first);
+        } else flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        d.window = SDL_CreateWindow("Swordfish Screensaver", x, y, w, h, flags);
+        if (!d.window) { std::cerr << "Window creation failed: " << SDL_GetError() << '\n'; continue; }
+        d.context = SDL_GL_CreateContext(d.window);
+        if (!d.context) { std::cerr << "OpenGL context creation failed: " << SDL_GetError() << '\n'; SDL_DestroyWindow(d.window); d.window = nullptr; continue; }
+        SDL_GL_SetSwapInterval(1);
     }
-
-    SDL_Window* window = SDL_CreateWindow("Swordfish Screensaver", x, y, width, height, flags);
-    if (!window) {
-        std::cerr << "Window creation failed: " << SDL_GetError() << '\n';
-        SDL_Quit();
-        return 1;
-    }
-    SDL_GLContext context = SDL_GL_CreateContext(window);
-    if (!context) {
-        std::cerr << "OpenGL context creation failed: " << SDL_GetError() << '\n';
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-    SDL_GL_SetSwapInterval(1);
-
-    bool running = true;
-    bool fullscreen = !options.windowed;
+    bool running = true, fullscreen = !options.windowed;
     const Uint64 start = SDL_GetPerformanceCounter();
     const double frequency = static_cast<double>(SDL_GetPerformanceFrequency());
-
     while (running) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) running = false;
-            if (event.type == SDL_KEYDOWN) {
-                const SDL_Keycode key = event.key.keysym.sym;
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) running = false;
+            if (e.type == SDL_KEYDOWN) {
+                const SDL_Keycode key = e.key.keysym.sym;
                 if (key == SDLK_ESCAPE || key == SDLK_q) running = false;
                 if (key == SDLK_f) {
                     fullscreen = !fullscreen;
-                    SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+                    for (auto& d : displays) if (d.window)
+                        SDL_SetWindowFullscreen(d.window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
                 }
             }
         }
-        int drawableWidth = 0, drawableHeight = 0;
-        SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
-        const float time = static_cast<float>(
-            static_cast<double>(SDL_GetPerformanceCounter() - start) / frequency);
-        render(time, drawableWidth, drawableHeight);
-        SDL_GL_SwapWindow(window);
+        const double t = static_cast<double>(SDL_GetPerformanceCounter() - start) / frequency;
+        for (auto& d : displays) {
+            if (!d.window || !d.context) continue;
+            SDL_GL_MakeCurrent(d.window, d.context);
+            int w = 0, h = 0;
+            SDL_GL_GetDrawableSize(d.window, &w, &h);
+            SDL_Rect view = d.bounds;
+            if (options.windowed) {
+                int wx, wy; SDL_GetWindowPosition(d.window, &wx, &wy);
+                int ww, wh; SDL_GetWindowSize(d.window, &ww, &wh);
+                view = {wx, wy, ww, wh};
+            }
+            render(t, w, h, view, virtualBounds, options);
+            SDL_GL_SwapWindow(d.window);
+        }
     }
-
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
+    for (auto& d : displays) {
+        if (d.context) SDL_GL_DeleteContext(d.context);
+        if (d.window) SDL_DestroyWindow(d.window);
+    }
     SDL_Quit();
     return 0;
 }

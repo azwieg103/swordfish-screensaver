@@ -5,7 +5,7 @@ on:
     tags:
       - "v*"
     branches:
-      - "**"
+      - main
   pull_request:
   workflow_dispatch:
 
@@ -48,7 +48,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/Release/swordfish-screensaver.exe dist/
-          Copy-Item "$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin/SDL2.dll" dist/
+          Copy-Item build/Release/SDL2.dll dist/
           Copy-Item README.md, LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath swordfish-windows-x64.zip
       - uses: actions/upload-artifact@v4
@@ -67,8 +67,9 @@ jobs:
             dnf install -y rpm-build cmake gcc-c++ git make mesa-libGL-devel libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel tar gzip
             useradd -m builder
             mkdir -p /home/builder/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-            tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.1.0.tar.gz --transform="s,^,swordfish-screensaver-0.1.0/," -C /src .
+            tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.2.0.tar.gz --transform="s,^,swordfish-screensaver-0.2.0/," -C /src .
             cp /src/packaging/swordfish-screensaver.spec /home/builder/rpmbuild/SPECS/
+            chown -R builder:builder /home/builder/rpmbuild
             runuser -u builder -- rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
           '
@@ -97,5 +98,5 @@ jobs:
           files: |
             release-assets/swordfish-linux
             release-assets/swordfish-windows-x64.zip
-            release-assets/swordfish-screensaver-0.1.0-*.el10.x86_64.rpm
-            release-assets/swordfish-screensaver-0.1.0-*.el10.src.rpm
+            release-assets/swordfish-screensaver-0.2.0-*.el10.x86_64.rpm
+            release-assets/swordfish-screensaver-0.2.0-*.el10.src.rpm
