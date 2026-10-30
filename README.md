@@ -10,7 +10,7 @@ The concept artwork above was created specifically for this repository and is de
 
 ## Current status
 
-**0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux adds an optional X11 idle launcher for KDE; KDE's own screen locker remains responsible for password-protected locking.
+**0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux adds an optional idle launcher for KDE/X11 and GNOME sessions; the desktop's own screen locker remains responsible for password-protected locking. The animation now supports thicker rays, larger plasma orbs, and configurable multiple orbiting orbs.
 
 ## Download releases
 
@@ -36,11 +36,11 @@ cmake --build build --parallel
 
 Run fullscreen by omitting `--windowed`; fullscreen uses all connected monitors. Use `--monitor 1` to limit fullscreen to one zero-based display. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
 
-## KDE X11 idle launch
+## KDE and GNOME idle launch
 
-The optional idle launcher starts the full multi-monitor Swordfish application after inactivity and closes it as soon as keyboard or mouse activity is detected. It uses `xprintidle`, so this integration is for KDE on X11 (not Wayland). It does **not** replace or disable KDE's secure screen locker.
+The optional idle launcher starts the full multi-monitor Swordfish application after inactivity and closes it as soon as keyboard or mouse activity is detected. It uses GNOME Mutter's session idle monitor on GNOME (including Wayland), or `xprintidle` on KDE/X11. It does **not** replace or disable the desktop's secure screen locker.
 
-Install `xprintidle` using your distribution's package manager if available. Then enable the launcher for your user:
+On KDE/X11, install `xprintidle` using your distribution's package manager. GNOME uses its session idle monitor via `gdbus`. Then enable the launcher for your user:
 
 ```bash
 mkdir -p ~/.config/autostart ~/.config
@@ -56,7 +56,7 @@ GREEN=classic
 
 The default delay is five minutes. For example, set `IDLE_TIMEOUT_MS=600000` for ten minutes. Supported palettes are `classic`, `lime`, `emerald`, and `teal`. Log out and back in (or start `/usr/bin/swordfish-idle` manually) to activate it. Remove `~/.config/autostart/swordfish-idle.desktop` to disable autostart.
 
-In KDE System Settings, keep **Screen Locking** enabled and set its timeout longer than the Swordfish idle delay. For example, with Swordfish at five minutes, set KDE to lock at ten minutes. This leaves the password-protected KDE lock screen in control of security.
+In KDE System Settings or GNOME Settings, keep the desktop's **Screen Locking** enabled and set its timeout longer than the Swordfish idle delay. For example, with Swordfish at five minutes, set the desktop to lock at ten minutes. This leaves the password-protected lock screen in control of security.
 
 ## Green palettes
 
@@ -98,7 +98,7 @@ A Windows x64 build is produced by GitHub Actions using Visual Studio and vcpkg.
 
 - `--windowed`: show a resizable preview window
 - `--monitor N`: use display N (zero-based) instead of all monitors
-- `--green classic|lime|emerald|teal`: select the beam color palette
+- `--green classic|lime|emerald|teal`: select the beam color palette\n- `--orbs 1-8`: set the number of orbiting plasma orbs (default 3)\n- `--beam-width 5-60`: set the ray thickness (default 25)
 - **Esc / Q**: quit
 - **F**: toggle fullscreen
 
