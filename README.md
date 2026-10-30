@@ -1,8 +1,8 @@
 # Swordfish Screensaver
 
-An independent, cross-platform animated plasma-trail screensaver concept for Linux and Windows.
+An independent, cross-platform animated plasma screensaver concept for Linux and Windows.
 
-The goal is an original, real-time visual: luminous yellow-green plasma comets with bright cores, curved tails, and fading particles on a dark background. This project uses a broad science-fiction visual aesthetic; it does **not** reproduce movie frames, use extracted footage, copy proprietary assets, or claim affiliation with any film or studio.
+The animation is an original procedural plasma beam orbiting one large circle across the virtual desktop. Each monitor displays only the portion of that shared animation that falls within its screen bounds, keeping the effect continuous across monitor edges. The beam alternates between clockwise and counter-clockwise motion and periodically splits into two or four synchronized pulses before merging back into one.
 
 ![Original project concept artwork: monitors showing glowing plasma trails](assets/swordfish-concept.svg)
 
@@ -10,7 +10,7 @@ The concept artwork above was created specifically for this repository and is de
 
 ## Current status
 
-**Working prototype.** The standalone application has been built and tested on AlmaLinux 10.2 and packaged as an RPM. It is not yet integrated with OS idle/lock services.
+**0.2.0 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. It is not yet integrated with OS idle/lock services.
 
 ## Download releases
 
@@ -34,7 +34,23 @@ cmake --build build --parallel
 ./build/swordfish-screensaver --windowed
 ```
 
-Run fullscreen by omitting `--windowed`. Choose a display index (zero-based) with `--monitor 1`. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
+Run fullscreen by omitting `--windowed`; fullscreen uses all connected monitors. Use `--monitor 1` to limit fullscreen to one zero-based display. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
+
+## Green palettes
+
+Choose a built-in green palette:
+
+```bash
+./build/swordfish-screensaver --windowed --green classic
+./build/swordfish-screensaver --green lime
+./build/swordfish-screensaver --green emerald
+./build/swordfish-screensaver --green teal
+```
+
+- `classic`: bright yellow-green (default)
+- `lime`: vivid yellow-lime
+- `emerald`: deeper emerald green
+- `teal`: green with a teal tint
 
 ## Build an RPM on AlmaLinux 10
 
@@ -43,11 +59,11 @@ From the repository root:
 ```bash
 sudo dnf install -y rpm-build rpmdevtools
 mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-git archive --format=tar.gz --prefix=swordfish-screensaver-0.1.0/ HEAD \
-  > ~/rpmbuild/SOURCES/swordfish-screensaver-0.1.0.tar.gz
+git archive --format=tar.gz --prefix=swordfish-screensaver-0.2.0/ HEAD \
+  > ~/rpmbuild/SOURCES/swordfish-screensaver-0.2.0.tar.gz
 cp packaging/swordfish-screensaver.spec ~/rpmbuild/SPECS/
 rpmbuild -ba ~/rpmbuild/SPECS/swordfish-screensaver.spec
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/swordfish-screensaver-0.1.0-*.el10.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/swordfish-screensaver-0.2.0-*.el10.x86_64.rpm
 ```
 
 See [packaging/README.md](packaging/README.md) for details. The RPM build fetches pinned SDL2 source if system SDL2 development files are unavailable.
@@ -59,7 +75,8 @@ A Windows x64 build is produced by GitHub Actions using Visual Studio and vcpkg.
 ## Controls
 
 - `--windowed`: show a resizable preview window
-- `--monitor N`: use display N (zero-based)
+- `--monitor N`: use display N (zero-based) instead of all monitors
+- `--green classic|lime|emerald|teal`: select the beam color palette
 - **Esc / Q**: quit
 - **F**: toggle fullscreen
 
@@ -75,8 +92,9 @@ A Windows x64 build is produced by GitHub Actions using Visual Studio and vcpkg.
 - [x] Original concept art
 - [x] Cross-platform SDL2/OpenGL prototype source
 - [x] CMake build configuration
-- [x] RPM built and tested on AlmaLinux 10.2
+- [x] RPM built and tested on AlmaLinux 10.2 (0.1.0)
 - [x] CI build definitions for Linux, Windows, and AlmaLinux 10 RPM
+- [ ] Test 0.2.0 multi-monitor behavior on physical displays
 - [ ] Verify all hosted CI jobs pass
 - [ ] Publish RPM/ZIP release assets
 - [ ] Native screensaver/idle integration for KDE and Windows
