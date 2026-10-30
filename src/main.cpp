@@ -14,7 +14,8 @@ constexpr double kPi = 3.14159265358979323846;
 struct Options {
     bool windowed = false;
     int monitor = -1;
-    float greenR = 0.28f, greenG = 1.0f, greenB = 0.035f;\n    int orbs = 3;\n    float beamWidth = 25.0f;
+    float greenR = 0.28f, greenG = 1.0f, greenB = 0.035f;
+    int orbs = 3;\n    float beamWidth = 25.0f;
 };
 
 struct Display {
@@ -29,7 +30,10 @@ Options parseArgs(int argc, char** argv) {
         const std::string arg(argv[i]);
         if (arg == "--windowed") o.windowed = true;
         else if (arg == "--monitor" && i + 1 < argc) o.monitor = std::max(0, std::atoi(argv[++i]));
-        else if (arg == "--orbs" && i + 1 < argc) {\n            o.orbs = std::atoi(argv[++i]);\n            if (o.orbs < 1 || o.orbs > 8) { std::cerr << "--orbs must be between 1 and 8\\n"; std::exit(2); }\n        } else if (arg == "--beam-width" && i + 1 < argc) {\n            o.beamWidth = std::strtof(argv[++i], nullptr);\n            if (o.beamWidth < 5.0f || o.beamWidth > 60.0f) { std::cerr << "--beam-width must be between 5 and 60\\n"; std::exit(2); }\n        } else if (arg == "--green" && i + 1 < argc) {
+        else if (arg == "--orbs" && i + 1 < argc) {
+            o.orbs = std::atoi(argv[++i]);\n            if (o.orbs < 1 || o.orbs > 8) { std::cerr << "--orbs must be between 1 and 8\\n"; std::exit(2); }
+        } else if (arg == "--beam-width" && i + 1 < argc) {\n            o.beamWidth = std::strtof(argv[++i], nullptr);\n            if (o.beamWidth < 5.0f || o.beamWidth > 60.0f) { std::cerr << "--beam-width must be between 5 and 60\\n"; std::exit(2); }
+        } else if (arg == "--green" && i + 1 < argc) {
             const std::string preset(argv[++i]);
             if (preset == "lime") o.greenR = 0.62f, o.greenG = 1.0f, o.greenB = 0.015f;
             else if (preset == "emerald") o.greenR = 0.02f, o.greenG = 0.88f, o.greenB = 0.34f;
@@ -40,8 +44,8 @@ Options parseArgs(int argc, char** argv) {
                 std::exit(2);
             }
         } else if (arg == "--help" || arg == "-h") {
-            std::cout << "Swordfish Screensaver 0.2.0\n"
-                         "Usage: swordfish-screensaver [--windowed] [--monitor N] [--green classic|lime|emerald|teal]\n"
+            std::cout << "Swordfish Screensaver 0.2.1\n"
+                         "Usage: swordfish-screensaver [--windowed] [--monitor N] [--green classic|lime|emerald|teal] [--orbs 1-8] [--beam-width 5-60]\n"
                          "Fullscreen uses every monitor; --monitor N limits fullscreen to one display.\n"
                          "--windowed opens a preview. Keys: Esc/Q quit, F toggle fullscreen.\n";
             std::exit(0);
