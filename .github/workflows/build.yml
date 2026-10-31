@@ -1,17 +1,12 @@
 name: Build
-
 on:
   push:
-    tags:
-      - "v*"
-    branches:
-      - main
+    tags: ["v*"]
+    branches: [main]
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   linux:
     runs-on: ubuntu-24.04
@@ -19,21 +14,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake g++ git libgl-dev libx11-dev libxext-dev libxrandr-dev libxrender-dev libxfixes-dev libxi-dev libxcursor-dev libxinerama-dev
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build
-        run: cmake --build build --parallel
-      - name: Test animation engine
-        run: ctest --test-dir build --output-on-failure
-      - name: Smoke test
-        run: ./build/swordfish-screensaver --help
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build --parallel
+      - run: ctest --test-dir build --output-on-failure
+      - run: ./build/swordfish-screensaver --help
       - uses: actions/upload-artifact@v4
         with:
           name: swordfish-linux
           path: build/swordfish-screensaver
 
   freebsd:
-    name: FreeBSD ${{ matrix.release }} x86_64
+    name: FreeBSD \${{ matrix.release }} x86_64
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -41,14 +32,12 @@ jobs:
         release: ["14.3", "15.0"]
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test in FreeBSD VM
-        uses: vmactions/freebsd-vm@v1
+      - uses: vmactions/freebsd-vm@v1
         with:
-          release: ${{ matrix.release }}
+          release: \${{ matrix.release }}
           usesh: true
           mem: 4096
-          prepare: |
-            pkg install -y cmake ninja git pkgconf sdl2 mesa-libs
+          prepare: pkg install -y cmake ninja git pkgconf sdl2 mesa-libs
           run: |
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
             cmake --build build --parallel
@@ -56,27 +45,64 @@ jobs:
             ./build/swordfish-screensaver --help
             mkdir -p stage/usr/local/bin
             install -m 755 build/swordfish-screensaver stage/usr/local/bin/
-            tar -czf swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz -C stage .
+            tar -czf swordfish-freebsd-\${{ matrix.release }}-amd64.tar.gz -C stage .
       - uses: actions/upload-artifact@v4
         with:
-          name: swordfish-freebsd-${{ matrix.release }}-amd64
-          path: swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz
+          name: swordfish-freebsd-\${{ matrix.release }}-amd64
+          path: swordfish-freebsd-\${{ matrix.release }}-amd64.tar.gz
 
-  windows:
-    runs-on: windows-2022
+  macos:
+    name: macOS \${{ matrix.arch }} build
+    runs-on: \${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: arm64, runner: macos-26 }
+          - { arch: x86_64, runner: macos-26-intel }
     steps:
       - uses: actions/checkout@v4
-      - name: Install SDL2
-        run: vcpkg install
+      - run: brew install cmake ninja
+      - name: Configure static SDL2
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=\${{ matrix.arch }} -DSWORDFISH_FETCH_SDL2=ON
+      - run: cmake --build build --parallel
+      - run: ctest --test-dir build --output-on-failure
+      - run: ./build/swordfish-screensaver --help
+      - name: Package macOS app bundle
+        run: |
+          APP="dist/Swordfish Screensaver.app"
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp build/swordfish-screensaver "$APP/Contents/MacOS/"
+          cp LICENSE README.md "$APP/Contents/Resources/"
+          cat > "$APP/Contents/Info.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+          <key>CFBundleName</key><string>Swordfish Screensaver</string>
+          <key>CFBundleIdentifier</key><string>com.zwiegnet.swordfish-screensaver</string>
+          <key>CFBundleVersion</key><string>0.2.1</string>
+          <key>CFBundlePackageType</key><string>APPL</string>
+          <key>CFBundleExecutable</key><string>swordfish-screensaver</string>
+          <key>LSMinimumSystemVersion</key><string>13.0</string>
+          </dict></plist>
+          PLIST
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "swordfish-macos-\${{ matrix.arch }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swordfish-macos-\${{ matrix.arch }}
+          path: swordfish-macos-\${{ matrix.arch }}.zip
+
+  windows:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - run: vcpkg install
       - name: Configure
         shell: pwsh
         run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
-      - name: Build
-        run: cmake --build build --config Release
-      - name: Test animation engine
-        run: ctest --test-dir build -C Release --output-on-failure
-      - name: Smoke test
-        run: .\build\Release\swordfish-screensaver.exe --help
+      - run: cmake --build build --config Release
+      - run: ctest --test-dir build -C Release --output-on-failure
+      - run: .\build\Release\swordfish-screensaver.exe --help
       - name: Package Windows ZIP
         shell: pwsh
         run: |
@@ -90,15 +116,30 @@ jobs:
           name: swordfish-windows-x64
           path: swordfish-windows-x64.zip
 
-  almalinux10-rpm:
+  rpm:
+    name: RPM build (\${{ matrix.name }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: RHEL-10-UBI, image: registry.access.redhat.com/ubi10/ubi:latest }
+          - { name: Rocky-10, image: rockylinux:10 }
+          - { name: OracleLinux-10, image: oraclelinux:10 }
+          - { name: AlmaLinux-10, image: almalinux:10 }
     steps:
       - uses: actions/checkout@v4
-      - name: Build RPM in AlmaLinux 10 container
+      - name: Build and test RPM
+        env:
+          IMAGE: \${{ matrix.image }}
         run: |
           mkdir -p "$RUNNER_TEMP/rpms"
-          docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" almalinux:10 bash -euxc '
+          docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" "$IMAGE" bash -euxc '
             dnf install -y rpm-build cmake gcc-c++ git make mesa-libGL-devel libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel tar gzip
+            cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release
+            cmake --build /tmp/build --parallel
+            ctest --test-dir /tmp/build --output-on-failure
+            /tmp/build/swordfish-screensaver --help
             useradd -m builder
             mkdir -p /home/builder/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
             tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.2.1.tar.gz --transform="s,^,swordfish-screensaver-0.2.1/," -C /src .
@@ -109,30 +150,28 @@ jobs:
           '
       - uses: actions/upload-artifact@v4
         with:
-          name: swordfish-almalinux10-rpms
-          path: ${{ runner.temp }}/rpms/*.rpm
+          name: swordfish-rpm-\${{ matrix.name }}
+          path: \${{ runner.temp }}/rpms/*.rpm
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, freebsd, windows, almalinux10-rpm]
+    needs: [linux, freebsd, macos, windows, rpm]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           pattern: swordfish-*
           path: release-assets
           merge-multiple: true
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
             release-assets/swordfish-linux
             release-assets/swordfish-windows-x64.zip
+            release-assets/swordfish-macos-*.zip
             release-assets/swordfish-freebsd-14.3-amd64.tar.gz
             release-assets/swordfish-freebsd-15.0-amd64.tar.gz
-            release-assets/swordfish-screensaver-0.2.1-*.el10.x86_64.rpm
-            release-assets/swordfish-screensaver-0.2.1-*.el10.src.rpm
+            release-assets/*.rpm
