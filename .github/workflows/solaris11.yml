@@ -1,0 +1,23 @@
+name: Oracle Solaris 11 build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Requires an administrator-provisioned self-hosted GitHub Actions runner
+# with labels: self-hosted, solaris, 11. This is intentionally manual so a
+# missing Solaris runner does not leave normal PR checks queued indefinitely.
+jobs:
+  solaris-11:
+    if: ${{ vars.SOLARIS11_RUNNER_ENABLED == 'true' }}
+    runs-on: [self-hosted, solaris, "11"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: sh scripts/build-solaris11.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swordfish-solaris11
+          path: dist/swordfish-solaris11-*.tar.gz

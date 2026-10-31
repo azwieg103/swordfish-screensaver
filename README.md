@@ -1,6 +1,6 @@
 # Swordfish Screensaver
 
-An independent, cross-platform animated plasma screensaver concept for Linux and Windows.
+An independent, cross-platform animated plasma screensaver concept for macOS, Linux, Windows, FreeBSD, and Oracle Solaris.
 
 The animation is an original procedural plasma beam orbiting one large circle across the virtual desktop. Each monitor displays only the portion of that shared animation that falls within its screen bounds, keeping the effect continuous across monitor edges. The beam alternates between clockwise and counter-clockwise motion and periodically splits into two or four synchronized pulses before merging back into one.
 
@@ -12,9 +12,19 @@ The concept artwork above was created specifically for this repository and is de
 
 **0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux includes an optional idle launcher using GNOME Mutter's session idle monitor or the X11 `xprintidle` utility. This launcher is not a native KDE screensaver plugin and does not currently provide a KDE Wayland idle backend. The desktop's own screen locker remains responsible for password-protected locking. The animation supports thicker rays, configurable beam splitting, and 1–8 orbiting plasma orbs.
 
+GitHub Actions is configured to build macOS 26 arm64 and Intel x86_64 app bundles, a Windows x64 ZIP, and RPM packages in one matrix covering Red Hat UBI 10 (RHEL-compatible), Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. FreeBSD 14.3 and 15.0 builds are also configured. These targets remain unverified until their CI jobs pass. Oracle Solaris 11.4 has a local build script and an optional manual workflow for a self-hosted Solaris runner; Solaris compilation and runtime are not yet verified.
+
 ## Download releases
 
-Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include an AlmaLinux 10 RPM and a Windows x64 ZIP. Until a release is published, use the source build instructions below.
+Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include macOS arm64 and Intel app bundles, a Windows x64 ZIP, RPMs for the EL10 family, and FreeBSD x86_64 archives. Debian packages, Arch packages, a native macOS screensaver module, and a native Windows `.scr` are not release outputs yet. Until a release is published, use the source build instructions below.
+
+## macOS builds
+
+GitHub Actions builds an arm64 app bundle on macOS 26 and an Intel x86_64 app bundle on macOS 26. SDL2 is built from the pinned source release as a static library for these jobs. The resulting `Swordfish Screensaver.app` is a standalone SDL application bundle, **not yet a native macOS `.saver` module** or a System Settings Screen Saver extension. Download the matching `swordfish-macos-*.zip` artifact from a workflow run or release, extract it, and launch the app.
+
+## Linux distribution coverage
+
+The RPM pipeline uses one shared spec and one matrix for the Enterprise Linux family: Red Hat UBI 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. UBI is the freely available RHEL-compatible image; it is not a subscription-registered RHEL host. The project plans separate Debian and Arch Linux build jobs because those distributions use different package formats and dependency tooling. Neither Debian nor Arch packaging is implemented yet.
 
 ## Build on AlmaLinux 10
 
@@ -36,6 +46,37 @@ ctest --test-dir build --output-on-failure
 ```
 
 Run fullscreen by omitting `--windowed`; fullscreen uses all connected monitors. Use `--monitor 1` to limit fullscreen to one zero-based display. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
+
+## Build on FreeBSD 14 or 15
+
+Install the build tools and SDL2:
+
+```sh
+sudo pkg install cmake ninja git pkgconf sdl2 mesa-libs
+```
+
+Then build and test:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+./build/swordfish-screensaver --windowed
+```
+
+GitHub Actions tests FreeBSD 14.3 and 15.0 in virtual machines. The CI artifact is a compressed x86_64 archive containing the executable; SDL2 and graphics runtime dependencies are provided by the host system. This is not yet a native FreeBSD `pkg` package or Ports Collection submission.
+
+## Build on Oracle Solaris 11.4
+
+The Solaris build script expects Solaris 11 (kernel release 5.11), CMake, a C++17 compiler, SDL2 development files or the ability to fetch/build SDL2, and OpenGL/X11 development headers.
+
+Install the compiler, CMake, SDL2, and graphics development dependencies using the package sources available for your Solaris 11.4 installation. GCC is recommended. Then run:
+
+```sh
+sh scripts/build-solaris11.sh
+```
+
+The script configures, builds, runs the animation-engine tests and CLI smoke test, and creates `dist/swordfish-solaris11-*.tar.gz`. Solaris 11.4 is not yet verified on a real machine. The manual GitHub Actions workflow requires a self-hosted runner labelled `self-hosted`, `solaris`, and `11`; enable the repository variable `SOLARIS11_RUNNER_ENABLED=true` after configuring that runner.
 
 ## KDE and GNOME idle launch
 
@@ -76,6 +117,12 @@ Choose a built-in green palette:
 - `lime`: vivid yellow-lime
 - `emerald`: deeper emerald green
 - `teal`: green with a teal tint
+
+## RPM builds across Enterprise Linux
+
+The shared RPM pipeline builds the same spec in four EL10-family container images: Red Hat UBI 10 (RHEL-compatible), Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. This avoids maintaining four separate packaging definitions. The RHEL target uses the freely available UBI image; it is not a subscription-registered RHEL host. Package release suffixes are generated by each distribution's RPM macros.
+
+To build locally, use the AlmaLinux instructions below; the same spec is intended for the other EL10-family distributions.
 
 ## Build an RPM on AlmaLinux 10
 
@@ -119,14 +166,24 @@ A Windows x64 application build is produced by GitHub Actions using Visual Studi
 - [x] Original concept art
 - [x] Cross-platform SDL2/OpenGL prototype source
 - [x] CMake build configuration
-- [x] RPM build for AlmaLinux 10
+- [x] Shared EL10 RPM build definition for RHEL UBI, Rocky, Oracle Linux, and AlmaLinux (CI verification pending)
+- [x] macOS arm64 and Intel build/package pipelines (CI verification pending)
 - [x] Synchronized multi-monitor animation and green palettes
 - [x] Shared, platform-independent animation timeline
 - [x] CI tests for animation timing and edge cases
+- [ ] Verify macOS app bundles launch on real Intel and Apple Silicon Macs
+- [ ] Create a native macOS `.saver` integration
+- [ ] Verify EL10 RPM builds across all four container images
+- [ ] Add Debian 13 build and Debian package pipeline
+- [ ] Add Arch Linux build and package pipeline
+- [ ] Verify FreeBSD 14.3 and 15.0 CI builds
+- [ ] Create native FreeBSD package/Ports Collection recipe
+- [ ] Compile and test on Oracle Solaris 11.4
+- [ ] Create Solaris IPS package
 - [ ] Test KDE X11 idle launcher on physical desktop
 - [ ] Verify GNOME idle launcher on a real GNOME session
 - [ ] Native screensaver/idle integration for KDE Wayland
 - [ ] Native Windows `.scr` integration, preview, and configuration
-- [ ] Publish 0.2.1 RPM/ZIP release assets
+- [ ] Publish 0.2.1 release assets
 
 Issues and pull requests are welcome. Include OS version, GPU/driver, build logs, and reproduction steps for bugs.
