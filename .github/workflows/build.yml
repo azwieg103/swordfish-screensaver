@@ -23,6 +23,49 @@ jobs:
           name: swordfish-linux
           path: build/swordfish-screensaver
 
+  kali:
+    name: Kali Rolling build and DEB package
+    runs-on: ubuntu-24.04
+    container:
+      image: kalilinux/kali-rolling:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends cmake g++ git dpkg-dev libsdl2-dev libgl-dev libx11-dev libxext-dev libxrandr-dev libxrender-dev libxfixes-dev libxi-dev libxcursor-dev libxinerama-dev
+          rm -rf /var/lib/apt/lists/*
+      - name: Build and test
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+          ctest --test-dir build --output-on-failure
+          ./build/swordfish-screensaver --help
+      - name: Build Kali DEB package
+        run: |
+          PKG="swordfish-screensaver_0.2.1_amd64"
+          mkdir -p "dist/$PKG/DEBIAN" "dist/$PKG/usr/bin" "dist/$PKG/usr/share/doc/swordfish-screensaver" "dist/$PKG/usr/share/licenses/swordfish-screensaver"
+          install -m 0755 build/swordfish-screensaver "dist/$PKG/usr/bin/swordfish-screensaver"
+          install -m 0644 README.md "dist/$PKG/usr/share/doc/swordfish-screensaver/README.md"
+          install -m 0644 LICENSE "dist/$PKG/usr/share/licenses/swordfish-screensaver/copyright"
+          cat > "dist/$PKG/DEBIAN/control" <<'CONTROL'
+          Package: swordfish-screensaver
+          Version: 0.2.1
+          Section: x11
+          Priority: optional
+          Architecture: amd64
+          Depends: libsdl2-2.0-0, libgl1, libx11-6, libxext6, libxrandr2, libxrender1, libxfixes3, libxi6, libxcursor1, libxinerama1
+          Maintainer: Zwiegnet
+          Description: Multi-display procedural Swordfish screensaver
+           Animated multi-monitor screensaver built with SDL2 and OpenGL.
+          CONTROL
+          dpkg-deb --root-owner-group --build "dist/$PKG" "swordfish-kali-rolling-amd64.deb"
+          dpkg-deb --info swordfish-kali-rolling-amd64.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swordfish-kali-rolling-deb
+          path: swordfish-kali-rolling-amd64.deb
+
   freebsd:
     name: FreeBSD ${{ matrix.release }} x86_64
     runs-on: ubuntu-24.04
@@ -40,7 +83,7 @@ jobs:
           prepare: pkg install -y cmake ninja git pkgconf sdl2 mesa-libs
           run: |
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-            cmake --build build --parallel
+            cmake --build build --parallel 2
             ctest --test-dir build --output-on-failure
             ./build/swordfish-screensaver --help
             mkdir -p stage/usr/local/bin
@@ -123,8 +166,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: RHEL-10-UBI, image: registry.access.redhat.com/ubi10/ubi:latest }
-          - { name: Rocky-10, image: rockylinux:10 }
+          - { name: CentOS-Stream-10, image: quay.io/centos/centos:stream10 }
+          - { name: Rocky-10, image: rockylinux/rockylinux:10 }
           - { name: OracleLinux-10, image: oraclelinux:10 }
           - { name: AlmaLinux-10, image: almalinux:10 }
     steps:
@@ -155,7 +198,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, freebsd, macos, windows, rpm]
+    needs: [linux, kali, freebsd, macos, windows, rpm]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -170,6 +213,7 @@ jobs:
           generate_release_notes: true
           files: |
             release-assets/swordfish-linux
+            release-assets/swordfish-kali-rolling-amd64.deb
             release-assets/swordfish-windows-x64.zip
             release-assets/swordfish-macos-*.zip
             release-assets/swordfish-freebsd-14.3-amd64.tar.gz
