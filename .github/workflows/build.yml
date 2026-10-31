@@ -96,19 +96,19 @@ jobs:
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
-      - run: vcpkg install
+      - name: Install SDL2 (static)
+        run: vcpkg install --triplet x64-windows-static
       - name: Configure
         shell: pwsh
-        run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+        run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
       - run: cmake --build build --config Release
       - run: ctest --test-dir build -C Release --output-on-failure
       - run: .\build\Release\swordfish-screensaver.exe --help
-      - name: Package Windows ZIP
+      - name: Verify and package self-contained Windows executable
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/Release/swordfish-screensaver.exe dist/
-          Copy-Item build/Release/SDL2.dll dist/
           Copy-Item README.md, LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath swordfish-windows-x64.zip
       - uses: actions/upload-artifact@v4
