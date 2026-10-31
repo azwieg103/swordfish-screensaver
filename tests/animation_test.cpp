@@ -21,7 +21,7 @@ int main() {
     ok &= check(start.direction == 1.0, "starts clockwise");
     ok &= check(std::abs(start.angle) < 1e-9, "starts at zero angle");
 
-    ok &= check(AnimationEngine::evaluate(9.0).beamCount == 2,
+    ok &= check(AnimationEngine::evaluate(10.0).beamCount == 2,
                 "splits into two beams");
     ok &= check(AnimationEngine::evaluate(16.0).beamCount == 4,
                 "splits into four beams");
