@@ -20,8 +20,9 @@ BuildRequires:  libXcursor-devel
 BuildRequires:  libXinerama-devel
 
 %description
-An independent SDL2/OpenGL multi-monitor circular plasma animation with an
-optional KDE X11 idle launcher. KDE continues to manage secure screen locking.
+An independent SDL2/OpenGL multi-monitor plasma animation with an optional
+desktop idle launcher. GNOME Mutter or X11 idle detection is used where
+available. The desktop environment remains responsible for secure locking.
 
 %prep
 %autosetup
@@ -41,5 +42,5 @@ optional KDE X11 idle launcher. KDE continues to manage secure screen locking.
 %{_datadir}/applications/swordfish-idle.desktop
 
 %changelog
-* Fri Oct 30 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-1
-- Add opt-in KDE X11 idle launcher and autostart desktop entry.
+* Sat Oct 31 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-2
+- Harden idle launcher and test the shared animation timeline.
