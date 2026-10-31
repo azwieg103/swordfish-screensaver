@@ -1,6 +1,6 @@
 # Swordfish Screensaver
 
-An independent, cross-platform animated plasma screensaver concept for Linux and Windows.
+An independent, cross-platform animated plasma screensaver concept for Linux, Windows, FreeBSD, and Oracle Solaris.
 
 The animation is an original procedural plasma beam orbiting one large circle across the virtual desktop. Each monitor displays only the portion of that shared animation that falls within its screen bounds, keeping the effect continuous across monitor edges. The beam alternates between clockwise and counter-clockwise motion and periodically splits into two or four synchronized pulses before merging back into one.
 
@@ -12,9 +12,11 @@ The concept artwork above was created specifically for this repository and is de
 
 **0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux includes an optional idle launcher using GNOME Mutter's session idle monitor or the X11 `xprintidle` utility. This launcher is not a native KDE screensaver plugin and does not currently provide a KDE Wayland idle backend. The desktop's own screen locker remains responsible for password-protected locking. The animation supports thicker rays, configurable beam splitting, and 1–8 orbiting plasma orbs.
 
+FreeBSD 14.3/15.0 build jobs are being added and produce tested x86_64 tar archives when CI passes. Oracle Solaris 11.4 has a build script and an optional manual workflow intended for a self-hosted Solaris runner; Solaris compilation and runtime are not yet verified.
+
 ## Download releases
 
-Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include an AlmaLinux 10 RPM and a Windows x64 ZIP. Until a release is published, use the source build instructions below.
+Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include an AlmaLinux 10 RPM, Windows x64 ZIP, and FreeBSD x86_64 archives. Until a release is published, use the source build instructions below.
 
 ## Build on AlmaLinux 10
 
@@ -36,6 +38,37 @@ ctest --test-dir build --output-on-failure
 ```
 
 Run fullscreen by omitting `--windowed`; fullscreen uses all connected monitors. Use `--monitor 1` to limit fullscreen to one zero-based display. Press **Esc** or **Q** to exit; press **F** to toggle fullscreen.
+
+## Build on FreeBSD 14 or 15
+
+Install the build tools and SDL2:
+
+```sh
+sudo pkg install cmake ninja git pkgconf sdl2 mesa-libs
+```
+
+Then build and test:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+./build/swordfish-screensaver --windowed
+```
+
+GitHub Actions tests FreeBSD 14.3 and 15.0 in virtual machines. The CI artifact is a compressed x86_64 archive containing the executable; SDL2 and graphics runtime dependencies are provided by the host system. This is not yet a native FreeBSD `pkg` package or Ports Collection submission.
+
+## Build on Oracle Solaris 11.4
+
+The Solaris build script expects Solaris 11 (kernel release 5.11), CMake, a C++17 compiler, SDL2 development files or the ability to fetch/build SDL2, and OpenGL/X11 development headers.
+
+Install the compiler, CMake, SDL2, and graphics development dependencies using the package sources available for your Solaris 11.4 installation. GCC is recommended. Then run:
+
+```sh
+sh scripts/build-solaris11.sh
+```
+
+The script configures, builds, runs the animation-engine tests and CLI smoke test, and creates `dist/swordfish-solaris11-*.tar.gz`. Solaris 11.4 is not yet verified on a real machine. The manual GitHub Actions workflow requires a self-hosted runner labelled `self-hosted`, `solaris`, and `11`; enable the repository variable `SOLARIS11_RUNNER_ENABLED=true` after configuring that runner.
 
 ## KDE and GNOME idle launch
 
@@ -123,10 +156,14 @@ A Windows x64 application build is produced by GitHub Actions using Visual Studi
 - [x] Synchronized multi-monitor animation and green palettes
 - [x] Shared, platform-independent animation timeline
 - [x] CI tests for animation timing and edge cases
+- [ ] Verify FreeBSD 14.3 and 15.0 CI builds
+- [ ] Create native FreeBSD package/Ports Collection recipe
+- [ ] Compile and test on Oracle Solaris 11.4
+- [ ] Create Solaris IPS package
 - [ ] Test KDE X11 idle launcher on physical desktop
 - [ ] Verify GNOME idle launcher on a real GNOME session
 - [ ] Native screensaver/idle integration for KDE Wayland
 - [ ] Native Windows `.scr` integration, preview, and configuration
-- [ ] Publish 0.2.1 RPM/ZIP release assets
+- [ ] Publish 0.2.1 release assets
 
 Issues and pull requests are welcome. Include OS version, GPU/driver, build logs, and reproduction steps for bugs.
