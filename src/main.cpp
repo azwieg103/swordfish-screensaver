@@ -16,7 +16,8 @@ struct Options {
     bool windowed = false;
     int monitor = -1;
     float greenR = 0.28f, greenG = 1.0f, greenB = 0.035f;
-    int orbs = 3;\n    float beamWidth = 25.0f;
+    int orbs = 3;
+    float beamWidth = 25.0f;
 };
 
 struct Display {
@@ -32,8 +33,11 @@ Options parseArgs(int argc, char** argv) {
         if (arg == "--windowed") o.windowed = true;
         else if (arg == "--monitor" && i + 1 < argc) o.monitor = std::max(0, std::atoi(argv[++i]));
         else if (arg == "--orbs" && i + 1 < argc) {
-            o.orbs = std::atoi(argv[++i]);\n            if (o.orbs < 1 || o.orbs > 8) { std::cerr << "--orbs must be between 1 and 8\\n"; std::exit(2); }
-        } else if (arg == "--beam-width" && i + 1 < argc) {\n            o.beamWidth = std::strtof(argv[++i], nullptr);\n            if (o.beamWidth < 5.0f || o.beamWidth > 60.0f) { std::cerr << "--beam-width must be between 5 and 60\\n"; std::exit(2); }
+            o.orbs = std::atoi(argv[++i]);
+            if (o.orbs < 1 || o.orbs > 8) { std::cerr << "--orbs must be between 1 and 8\n"; std::exit(2); }
+        } else if (arg == "--beam-width" && i + 1 < argc) {
+            o.beamWidth = std::strtof(argv[++i], nullptr);
+            if (o.beamWidth < 5.0f || o.beamWidth > 60.0f) { std::cerr << "--beam-width must be between 5 and 60\n"; std::exit(2); }
         } else if (arg == "--green" && i + 1 < argc) {
             const std::string preset(argv[++i]);
             if (preset == "lime") o.greenR = 0.62f, o.greenG = 1.0f, o.greenB = 0.015f;
