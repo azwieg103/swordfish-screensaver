@@ -46,7 +46,10 @@ else()
 endif()
 
 find_package(OpenGL REQUIRED)
-add_executable(swordfish-screensaver src/main.cpp)
+add_executable(swordfish-screensaver
+  src/main.cpp
+  src/core/animation.cpp
+)
 target_link_libraries(swordfish-screensaver PRIVATE ${SWORDFISH_SDL_TARGET} OpenGL::GL)
 if(WIN32)
   target_compile_definitions(swordfish-screensaver PRIVATE SDL_MAIN_HANDLED)
@@ -55,6 +58,13 @@ if(MSVC)
   target_compile_options(swordfish-screensaver PRIVATE /W4 /permissive-)
 else()
   target_compile_options(swordfish-screensaver PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(swordfish-engine-tests tests/animation_test.cpp src/core/animation.cpp)
+  target_include_directories(swordfish-engine-tests PRIVATE src)
+  add_test(NAME animation-engine COMMAND swordfish-engine-tests)
 endif()
 
 install(TARGETS swordfish-screensaver RUNTIME DESTINATION bin)

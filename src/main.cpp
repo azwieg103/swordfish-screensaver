@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include "core/animation.h"
 
 #include <algorithm>
 #include <cmath>
@@ -141,23 +142,23 @@ void render(double t, int drawableW, int drawableH, const SDL_Rect& local,
     const float scale = static_cast<float>(std::min(virtualBounds.w, virtualBounds.h));
     const float rx = static_cast<float>(virtualBounds.w) * 0.43f;
     const float ry = static_cast<float>(virtualBounds.h) * 0.43f;
-    const double rotations = t / 5.0; // one revolution every five seconds
-    const int leg = static_cast<int>(std::floor(rotations / 5.0));
-    const double within = rotations - leg * 5.0;
-    const double direction = (leg % 2 == 0) ? 1.0 : -1.0;
-    const double angle = direction > 0 ? within * (2.0 * kPi) : (5.0 - within) * (2.0 * kPi);
-    // Smoothly morph from one pulse to two, four, then back to one.
-    const double cycle = std::fmod(t, 32.0);
-    const double splitWave = (cycle < 8.0 || cycle >= 24.0) ? 0.0 :
-                             (cycle < 12.0 ? (cycle - 8.0) / 4.0 :
-                              cycle < 20.0 ? 1.0 : (24.0 - cycle) / 4.0);
-    const int beams = splitWave < 0.34 ? 1 : splitWave < 0.84 ? 2 : 4;
+    const auto frame = swordfish::AnimationEngine::evaluate(t);
     (void)scale;
     glPushMatrix();
     glTranslatef(static_cast<float>(cx), static_cast<float>(cy), 0.0f);
-    for (int i = 0; i < beams; ++i) {
-        const double a = angle + (2.0 * kPi * i / beams);
-        drawBeam(a, direction, rx, ry, o);
+    for (int i = 0; i < frame.beamCount; ++i) {
+        const double a = frame.angle + (2.0 * kPi * i / frame.beamCount);
+        drawBeam(a, frame.direction, rx, ry, o);
+    }
+    // Extra plasma orbs use the shared timeline, so all displays stay synchronized.
+    for (int i = 0; i < o.orbs; ++i) {
+        const double phase = frame.angle + (2.0 * kPi * i / o.orbs);
+        const float orbitX = rx * 0.72f * static_cast<float>(std::cos(phase));
+        const float orbitY = ry * 0.72f * static_cast<float>(std::sin(phase));
+        const float pulse = 0.82f + 0.18f * static_cast<float>(std::sin(t * 2.1 + i));
+        const float radius = (0.012f + 0.004f * static_cast<float>(i % 3)) * pulse;
+        glowDot(orbitX, orbitY, radius, o.greenR, o.greenG, o.greenB);
+        glowDot(orbitX, orbitY, radius * 0.28f, 0.82f, 1.0f, 0.76f);
     }
     glPopMatrix();
     glDisable(GL_BLEND);
