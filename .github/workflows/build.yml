@@ -24,7 +24,7 @@ jobs:
           path: build/swordfish-screensaver
 
   freebsd:
-    name: FreeBSD \${{ matrix.release }} x86_64
+    name: FreeBSD ${{ matrix.release }} x86_64
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: vmactions/freebsd-vm@v1
         with:
-          release: \${{ matrix.release }}
+          release: ${{ matrix.release }}
           usesh: true
           mem: 4096
           prepare: pkg install -y cmake ninja git pkgconf sdl2 mesa-libs
@@ -45,15 +45,15 @@ jobs:
             ./build/swordfish-screensaver --help
             mkdir -p stage/usr/local/bin
             install -m 755 build/swordfish-screensaver stage/usr/local/bin/
-            tar -czf swordfish-freebsd-\${{ matrix.release }}-amd64.tar.gz -C stage .
+            tar -czf swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz -C stage .
       - uses: actions/upload-artifact@v4
         with:
-          name: swordfish-freebsd-\${{ matrix.release }}-amd64
-          path: swordfish-freebsd-\${{ matrix.release }}-amd64.tar.gz
+          name: swordfish-freebsd-${{ matrix.release }}-amd64
+          path: swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz
 
   macos:
-    name: macOS \${{ matrix.arch }} build
-    runs-on: \${{ matrix.runner }}
+    name: macOS ${{ matrix.arch }} build
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: brew install cmake ninja
       - name: Configure static SDL2
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=\${{ matrix.arch }} -DSWORDFISH_FETCH_SDL2=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} -DSWORDFISH_FETCH_SDL2=ON
       - run: cmake --build build --parallel
       - run: ctest --test-dir build --output-on-failure
       - run: ./build/swordfish-screensaver --help
@@ -86,11 +86,11 @@ jobs:
           <key>LSMinimumSystemVersion</key><string>13.0</string>
           </dict></plist>
           PLIST
-          ditto -c -k --sequesterRsrc --keepParent "$APP" "swordfish-macos-\${{ matrix.arch }}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "swordfish-macos-${{ matrix.arch }}.zip"
       - uses: actions/upload-artifact@v4
         with:
-          name: swordfish-macos-\${{ matrix.arch }}
-          path: swordfish-macos-\${{ matrix.arch }}.zip
+          name: swordfish-macos-${{ matrix.arch }}
+          path: swordfish-macos-${{ matrix.arch }}.zip
 
   windows:
     runs-on: windows-2025
@@ -117,7 +117,7 @@ jobs:
           path: swordfish-windows-x64.zip
 
   rpm:
-    name: RPM build (\${{ matrix.name }})
+    name: RPM build (${{ matrix.name }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -131,7 +131,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build and test RPM
         env:
-          IMAGE: \${{ matrix.image }}
+          IMAGE: ${{ matrix.image }}
         run: |
           mkdir -p "$RUNNER_TEMP/rpms"
           docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" "$IMAGE" bash -euxc '
@@ -150,8 +150,8 @@ jobs:
           '
       - uses: actions/upload-artifact@v4
         with:
-          name: swordfish-rpm-\${{ matrix.name }}
-          path: \${{ runner.temp }}/rpms/*.rpm
+          name: swordfish-rpm-${{ matrix.name }}
+          path: ${{ runner.temp }}/rpms/*.rpm
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
