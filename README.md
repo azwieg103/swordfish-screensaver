@@ -12,11 +12,11 @@ The concept artwork above was created specifically for this repository and is de
 
 **0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux includes an optional idle launcher using GNOME Mutter's session idle monitor or the X11 `xprintidle` utility. This launcher is not a native KDE screensaver plugin and does not currently provide a KDE Wayland idle backend. The desktop's own screen locker remains responsible for password-protected locking. The animation supports thicker rays, configurable beam splitting, and 1–8 orbiting plasma orbs.
 
-GitHub Actions is configured to build macOS 26 arm64 and Intel x86_64 app bundles, a Windows x64 ZIP, and RPM packages in one matrix covering Red Hat UBI 10 (RHEL-compatible), Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. FreeBSD 14.3 and 15.0 builds are also configured. These targets remain unverified until their CI jobs pass. Oracle Solaris 11.4 has a local build script and an optional manual workflow for a self-hosted Solaris runner; Solaris compilation and runtime are not yet verified.
+GitHub Actions builds Linux, Kali Rolling (including a native amd64 `.deb` package), macOS 26 arm64 and Intel x86_64 app bundles, a self-contained Windows x64 ZIP, FreeBSD 14.3 and 15.0 archives, and RPMs for CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. Platform support is considered CI-verified only after the corresponding workflow jobs pass. Oracle Solaris 11.4 has a local build script and an optional manual workflow for a self-hosted Solaris runner; Solaris compilation and runtime are not yet verified.
 
 ## Download releases
 
-Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include macOS arm64 and Intel app bundles, a Windows x64 ZIP, RPMs for the EL10 family, and FreeBSD x86_64 archives. Debian packages, Arch packages, a native macOS screensaver module, and a native Windows `.scr` are not release outputs yet. Until a release is published, use the source build instructions below.
+Published binaries will be attached to the repository's [GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases). Each tagged release is intended to include a Kali-compatible amd64 `.deb`, macOS arm64 and Intel app bundles, a Windows x64 ZIP, RPMs for the EL10 family, and FreeBSD x86_64 archives. Arch packages, a native macOS screensaver module, and a native Windows `.scr` are not release outputs yet. Until a release is published, use the source build instructions below.
 
 ## macOS builds
 
@@ -24,7 +24,7 @@ GitHub Actions builds an arm64 app bundle on macOS 26 and an Intel x86_64 app bu
 
 ## Linux distribution coverage
 
-The RPM pipeline uses one shared spec and one matrix for the Enterprise Linux family: Red Hat UBI 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. UBI is the freely available RHEL-compatible image; it is not a subscription-registered RHEL host. The project plans separate Debian and Arch Linux build jobs because those distributions use different package formats and dependency tooling. Neither Debian nor Arch packaging is implemented yet.
+The RPM pipeline uses one shared spec across CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. The UBI 10 image was removed from the build matrix because its published repositories do not provide all of the required OpenGL/X11 development packages; CentOS Stream 10 provides a RHEL-family build target with the required development dependencies. Kali Rolling is built and packaged separately as a Debian-format amd64 `.deb`; this does not yet claim generic Debian 13 compatibility. Arch packaging remains future work.
 
 ## Build on AlmaLinux 10
 
@@ -64,7 +64,7 @@ ctest --test-dir build --output-on-failure
 ./build/swordfish-screensaver --windowed
 ```
 
-GitHub Actions tests FreeBSD 14.3 and 15.0 in virtual machines. The CI artifact is a compressed x86_64 archive containing the executable; SDL2 and graphics runtime dependencies are provided by the host system. This is not yet a native FreeBSD `pkg` package or Ports Collection submission.
+GitHub Actions tests FreeBSD 14.3 and 15.0 in virtual machines. The CI build uses a bounded parallel build count to accommodate FreeBSD's make implementation. The artifact is a compressed x86_64 archive containing the executable; SDL2 and graphics runtime dependencies are provided by the host system. This is not yet a native FreeBSD `pkg` package or Ports Collection submission.
 
 ## Build on Oracle Solaris 11.4
 
@@ -120,7 +120,7 @@ Choose a built-in green palette:
 
 ## RPM builds across Enterprise Linux
 
-The shared RPM pipeline builds the same spec in four EL10-family container images: Red Hat UBI 10 (RHEL-compatible), Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. This avoids maintaining four separate packaging definitions. The RHEL target uses the freely available UBI image; it is not a subscription-registered RHEL host. Package release suffixes are generated by each distribution's RPM macros.
+The shared RPM pipeline builds the same spec in four EL10-family container images: CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. This avoids maintaining four separate packaging definitions. Package release suffixes are generated by each distribution's RPM macros.
 
 To build locally, use the AlmaLinux instructions below; the same spec is intended for the other EL10-family distributions.
 
@@ -142,7 +142,7 @@ See [packaging/README.md](packaging/README.md) for details. The RPM build fetche
 
 ## Windows
 
-A Windows x64 application build is produced by GitHub Actions using Visual Studio and vcpkg. Download the `swordfish-windows-x64.zip` artifact from a published release, extract it, and run `swordfish-screensaver.exe`. The ZIP includes the SDL2 runtime DLL. This is currently a standalone executable, **not yet a native Windows `.scr` screensaver**; Windows preview/configuration integration remains future work.
+A Windows x64 application build is produced by GitHub Actions using Visual Studio and vcpkg's static SDL2 triplet. Download the `swordfish-windows-x64.zip` artifact from a published release, extract it, and run `swordfish-screensaver.exe`. The executable is packaged without a separate SDL2 runtime DLL. This is currently a standalone executable, **not yet a native Windows `.scr` screensaver**; Windows preview/configuration integration remains future work.
 
 ## Controls
 
@@ -166,7 +166,8 @@ A Windows x64 application build is produced by GitHub Actions using Visual Studi
 - [x] Original concept art
 - [x] Cross-platform SDL2/OpenGL prototype source
 - [x] CMake build configuration
-- [x] Shared EL10 RPM build definition for RHEL UBI, Rocky, Oracle Linux, and AlmaLinux (CI verification pending)
+- [x] Shared EL10 RPM build definition for CentOS Stream, Rocky, Oracle Linux, and AlmaLinux (CI verification pending)
+- [x] Kali Rolling build, tests, and amd64 DEB packaging pipeline (CI verification pending)
 - [x] macOS arm64 and Intel build/package pipelines (CI verification pending)
 - [x] Synchronized multi-monitor animation and green palettes
 - [x] Shared, platform-independent animation timeline
@@ -174,7 +175,7 @@ A Windows x64 application build is produced by GitHub Actions using Visual Studi
 - [ ] Verify macOS app bundles launch on real Intel and Apple Silicon Macs
 - [ ] Create a native macOS `.saver` integration
 - [ ] Verify EL10 RPM builds across all four container images
-- [ ] Add Debian 13 build and Debian package pipeline
+- [ ] Validate Kali-built DEB compatibility on Debian 13 before claiming generic Debian support
 - [ ] Add Arch Linux build and package pipeline
 - [ ] Verify FreeBSD 14.3 and 15.0 CI builds
 - [ ] Create native FreeBSD package/Ports Collection recipe
