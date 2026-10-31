@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Swordfish Idle Launcher
+Comment=Show Swordfish plasma animation after inactivity
+Exec=/usr/bin/swordfish-idle
+TryExec=/usr/bin/swordfish-idle
+Terminal=false
+X-KDE-autostart-after=panel
+X-KDE-StartupNotify=false

@@ -15,6 +15,7 @@ struct Options {
     bool windowed = false;
     int monitor = -1;
     float greenR = 0.28f, greenG = 1.0f, greenB = 0.035f;
+    int orbs = 3;\n    float beamWidth = 25.0f;
 };
 
 struct Display {
@@ -29,7 +30,10 @@ Options parseArgs(int argc, char** argv) {
         const std::string arg(argv[i]);
         if (arg == "--windowed") o.windowed = true;
         else if (arg == "--monitor" && i + 1 < argc) o.monitor = std::max(0, std::atoi(argv[++i]));
-        else if (arg == "--green" && i + 1 < argc) {
+        else if (arg == "--orbs" && i + 1 < argc) {
+            o.orbs = std::atoi(argv[++i]);\n            if (o.orbs < 1 || o.orbs > 8) { std::cerr << "--orbs must be between 1 and 8\\n"; std::exit(2); }
+        } else if (arg == "--beam-width" && i + 1 < argc) {\n            o.beamWidth = std::strtof(argv[++i], nullptr);\n            if (o.beamWidth < 5.0f || o.beamWidth > 60.0f) { std::cerr << "--beam-width must be between 5 and 60\\n"; std::exit(2); }
+        } else if (arg == "--green" && i + 1 < argc) {
             const std::string preset(argv[++i]);
             if (preset == "lime") o.greenR = 0.62f, o.greenG = 1.0f, o.greenB = 0.015f;
             else if (preset == "emerald") o.greenR = 0.02f, o.greenG = 0.88f, o.greenB = 0.34f;
@@ -40,8 +44,8 @@ Options parseArgs(int argc, char** argv) {
                 std::exit(2);
             }
         } else if (arg == "--help" || arg == "-h") {
-            std::cout << "Swordfish Screensaver 0.2.0\n"
-                         "Usage: swordfish-screensaver [--windowed] [--monitor N] [--green classic|lime|emerald|teal]\n"
+            std::cout << "Swordfish Screensaver 0.2.1\n"
+                         "Usage: swordfish-screensaver [--windowed] [--monitor N] [--green classic|lime|emerald|teal] [--orbs 1-8] [--beam-width 5-60]\n"
                          "Fullscreen uses every monitor; --monitor N limits fullscreen to one display.\n"
                          "--windowed opens a preview. Keys: Esc/Q quit, F toggle fullscreen.\n";
             std::exit(0);
@@ -70,31 +74,51 @@ void glowDot(float x, float y, float radius, float r, float g, float b) {
 }
 
 void drawBeam(double angle, double direction, float rx, float ry, const Options& o) {
-    const float cx = rx * 0.0f;
-    (void)cx;
     const float headX = rx * std::cos(static_cast<float>(angle));
     const float headY = ry * std::sin(static_cast<float>(angle));
-    // A tapered arc trail follows the moving pulse around the shared desktop orbit.
+    const float baseWidth = o.beamWidth;
+
+    // Build a tapered ribbon rather than a GL line: broad and luminous at
+    // the comet head, narrowing smoothly into a long fading tail.
     for (int layer = 0; layer < 3; ++layer) {
-        glLineWidth(layer == 0 ? 13.0f : layer == 1 ? 5.0f : 1.8f);
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 150; ++i) {
-            const float u = static_cast<float>(i) / 150.0f;
-            const double a = angle - direction * (0.95 * u);
-            const float fade = 1.0f - u;
-            if (layer == 0) glColor4f(o.greenR, o.greenG, o.greenB, 0.012f + 0.075f * fade);
-            if (layer == 1) glColor4f(o.greenR, o.greenG, o.greenB, 0.025f + 0.25f * fade);
-            if (layer == 2) glColor4f(0.82f, 1.0f, 0.76f, 0.08f + 0.76f * fade);
-            vertex(rx * std::cos(static_cast<float>(a)), ry * std::sin(static_cast<float>(a)));
+        const float widthScale = layer == 0 ? 2.8f : layer == 1 ? 1.65f : 0.62f;
+        glBegin(GL_TRIANGLE_STRIP);
+        for (int i = 0; i <= 180; ++i) {
+            const float u = static_cast<float>(i) / 180.0f;
+            const double a = angle - direction * (1.25 * u);
+            const float px = rx * std::cos(static_cast<float>(a));
+            const float py = ry * std::sin(static_cast<float>(a));
+            const float tx = -rx * std::sin(static_cast<float>(a)) * static_cast<float>(direction);
+            const float ty =  ry * std::cos(static_cast<float>(a)) * static_cast<float>(direction);
+            const float tangentLength = std::max(0.001f, std::sqrt(tx * tx + ty * ty));
+            const float nx = -ty / tangentLength;
+            const float ny =  tx / tangentLength;
+            const float taper = 0.025f + 0.975f * std::pow(1.0f - u, 0.78f);
+            const float halfWidth = baseWidth * widthScale * taper * 0.5f;
+            const float fade = std::pow(1.0f - u, 0.72f);
+            float r, g, b, alpha;
+            if (layer == 0) {
+                r = o.greenR; g = o.greenG; b = o.greenB;
+                alpha = 0.012f + 0.055f * fade;
+            } else if (layer == 1) {
+                r = o.greenR; g = o.greenG; b = o.greenB;
+                alpha = 0.025f + 0.24f * fade;
+            } else {
+                r = 0.82f; g = 1.0f; b = 0.76f;
+                alpha = 0.035f + 0.68f * fade;
+            }
+            glColor4f(r, g, b, alpha);
+            vertex(px + nx * halfWidth, py + ny * halfWidth);
+            vertex(px - nx * halfWidth, py - ny * halfWidth);
         }
         glEnd();
     }
-    glowDot(headX, headY, 0.009f, o.greenR, o.greenG, o.greenB);
-    glPointSize(4.0f);
-    glColor4f(1.0f, 1.0f, 0.88f, 1.0f);
-    glBegin(GL_POINTS); vertex(headX, headY); glEnd();
-}
 
+    // A larger, hot core gives the leading end a rounded comet-head appearance.
+    glowDot(headX, headY, 0.026f, o.greenR, o.greenG, o.greenB);
+    glowDot(headX, headY, 0.011f, 0.82f, 1.0f, 0.76f);
+    glowDot(headX, headY, 0.0045f, 1.0f, 1.0f, 0.94f);
+}
 void render(double t, int drawableW, int drawableH, const SDL_Rect& local,
             const SDL_Rect& virtualBounds, const Options& o) {
     glViewport(0, 0, drawableW, drawableH);
