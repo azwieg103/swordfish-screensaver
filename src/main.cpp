@@ -74,31 +74,51 @@ void glowDot(float x, float y, float radius, float r, float g, float b) {
 }
 
 void drawBeam(double angle, double direction, float rx, float ry, const Options& o) {
-    const float cx = rx * 0.0f;
-    (void)cx;
     const float headX = rx * std::cos(static_cast<float>(angle));
     const float headY = ry * std::sin(static_cast<float>(angle));
-    // A tapered arc trail follows the moving pulse around the shared desktop orbit.
+    const float baseWidth = o.beamWidth;
+
+    // Build a tapered ribbon rather than a GL line: broad and luminous at
+    // the comet head, narrowing smoothly into a long fading tail.
     for (int layer = 0; layer < 3; ++layer) {
-        glLineWidth(layer == 0 ? o.beamWidth : layer == 1 ? o.beamWidth * 0.42f : o.beamWidth * 0.14f);
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i <= 150; ++i) {
-            const float u = static_cast<float>(i) / 150.0f;
-            const double a = angle - direction * (0.95 * u);
-            const float fade = 1.0f - u;
-            if (layer == 0) glColor4f(o.greenR, o.greenG, o.greenB, 0.012f + 0.075f * fade);
-            if (layer == 1) glColor4f(o.greenR, o.greenG, o.greenB, 0.025f + 0.25f * fade);
-            if (layer == 2) glColor4f(0.82f, 1.0f, 0.76f, 0.08f + 0.76f * fade);
-            vertex(rx * std::cos(static_cast<float>(a)), ry * std::sin(static_cast<float>(a)));
+        const float widthScale = layer == 0 ? 2.8f : layer == 1 ? 1.65f : 0.62f;
+        glBegin(GL_TRIANGLE_STRIP);
+        for (int i = 0; i <= 180; ++i) {
+            const float u = static_cast<float>(i) / 180.0f;
+            const double a = angle - direction * (1.25 * u);
+            const float px = rx * std::cos(static_cast<float>(a));
+            const float py = ry * std::sin(static_cast<float>(a));
+            const float tx = -rx * std::sin(static_cast<float>(a)) * static_cast<float>(direction);
+            const float ty =  ry * std::cos(static_cast<float>(a)) * static_cast<float>(direction);
+            const float tangentLength = std::max(0.001f, std::sqrt(tx * tx + ty * ty));
+            const float nx = -ty / tangentLength;
+            const float ny =  tx / tangentLength;
+            const float taper = 0.025f + 0.975f * std::pow(1.0f - u, 0.78f);
+            const float halfWidth = baseWidth * widthScale * taper * 0.5f;
+            const float fade = std::pow(1.0f - u, 0.72f);
+            float r, g, b, alpha;
+            if (layer == 0) {
+                r = o.greenR; g = o.greenG; b = o.greenB;
+                alpha = 0.012f + 0.055f * fade;
+            } else if (layer == 1) {
+                r = o.greenR; g = o.greenG; b = o.greenB;
+                alpha = 0.025f + 0.24f * fade;
+            } else {
+                r = 0.82f; g = 1.0f; b = 0.76f;
+                alpha = 0.035f + 0.68f * fade;
+            }
+            glColor4f(r, g, b, alpha);
+            vertex(px + nx * halfWidth, py + ny * halfWidth);
+            vertex(px - nx * halfWidth, py - ny * halfWidth);
         }
         glEnd();
     }
-    glowDot(headX, headY, 0.020f, o.greenR, o.greenG, o.greenB);\n    glowDot(headX, headY, 0.008f, 0.82f, 1.0f, 0.76f);
-    glPointSize(4.0f);
-    glColor4f(1.0f, 1.0f, 0.88f, 1.0f);
-    glBegin(GL_POINTS); vertex(headX, headY); glEnd();
-}
 
+    // A larger, hot core gives the leading end a rounded comet-head appearance.
+    glowDot(headX, headY, 0.026f, o.greenR, o.greenG, o.greenB);
+    glowDot(headX, headY, 0.011f, 0.82f, 1.0f, 0.76f);
+    glowDot(headX, headY, 0.0045f, 1.0f, 1.0f, 0.94f);
+}
 void render(double t, int drawableW, int drawableH, const SDL_Rect& local,
             const SDL_Rect& virtualBounds, const Options& o) {
     glViewport(0, 0, drawableW, drawableH);
