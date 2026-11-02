@@ -28,13 +28,25 @@ WallpaperItem {
         repeat: true
         running: true
         onTriggered: {
-            root.currentDate = new Date()
-            root.dateLabel = Qt.formatDate(root.currentDate, Qt.locale().dateFormat(Locale.LongFormat))
-            root.timeLabel = Qt.formatTime(root.currentDate, root.cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
             root.phase = (Date.now() / 1000.0) % 16000000
             canvas.requestPaint()
         }
     }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: root.updateClock()
+    }
+
+    function updateClock() {
+        currentDate = new Date()
+        dateLabel = Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
+        timeLabel = Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
+    }
+
+    Component.onCompleted: updateClock()
 
     Canvas {
         id: canvas
