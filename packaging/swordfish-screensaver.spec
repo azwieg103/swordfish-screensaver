@@ -34,6 +34,11 @@ available. The desktop environment remains responsible for secure locking.
 %install
 %cmake_install
 
+# Install the KDE Plasma 6 wallpaper package
+mkdir -p %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish
+cp -a packaging/plasma6/package/. \\
+  %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/
+
 %files
 %license LICENSE
 %doc README.md
