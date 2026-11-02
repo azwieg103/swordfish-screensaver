@@ -76,3 +76,5 @@ install(TARGETS swordfish-screensaver RUNTIME DESTINATION bin)
 
 install(PROGRAMS scripts/swordfish-idle DESTINATION bin)
 install(FILES packaging/swordfish-idle.desktop DESTINATION share/applications)
+
+# Plasma 6 discovers wallpaper packages from this directory. Keep the plugin\n# as QML data so the core renderer remains independent of KDE libraries.\nif(UNIX AND NOT APPLE)\n  install(DIRECTORY packaging/plasma6/package/\n    DESTINATION share/plasma/wallpapers/org.zwiegnet.swordfish)\nendif()
