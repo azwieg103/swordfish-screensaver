@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE kcfg SYSTEM "kcfg.dtd">
+<kcfg>
+  <group name="General">
+    <entry name="showClock" type="Bool"><default>true</default></entry>
+    <entry name="showDate" type="Bool"><default>true</default></entry>
+    <entry name="clock24Hour" type="Bool"><default>true</default></entry>
+    <entry name="green" type="String"><default>classic</default></entry>
+    <entry name="orbs" type="Int"><default>3</default></entry>
+    <entry name="beamWidth" type="Int"><default>25</default></entry>
+  </group>
+</kcfg>
