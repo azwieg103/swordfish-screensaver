@@ -53,8 +53,11 @@ WallpaperItem {
             const rev = (t % 50) < 25 ? 1 : -1
             const within = (t % 25) / 5
             const angle = rev > 0 ? within * Math.PI * 2 : (5 - within) * Math.PI * 2
-            const split = (t % 32)
-            const beams = split < 11 ? 1 : (split < 21 ? 4 : 2)
+            const split = t % 32
+            const splitWave = (split < 8 || split >= 24) ? 0 :
+                (split < 12 ? (split - 8) / 4 :
+                 split < 20 ? 1 : (24 - split) / 4)
+            const beams = splitWave < 0.34 ? 1 : (splitWave < 0.84 ? 2 : 4)
             const glow = root.plasmaColor
 
             ctx.reset()
@@ -88,8 +91,14 @@ WallpaperItem {
                 tail.addColorStop(0.72, Qt.rgba(glow.r, glow.g, glow.b, 0.18))
                 tail.addColorStop(1, "#e7ffed")
                 ctx.beginPath()
-                ctx.moveTo(x - Math.cos(a) * rx * 0.42, y - Math.sin(a) * ry * 0.42)
-                ctx.quadraticCurveTo(x, y, x, y)
+                for (let j = 0; j <= 80; ++j) {
+                    const u = j / 80
+                    const trailAngle = a - rev * 1.25 * (1 - u)
+                    const px = rx * Math.cos(trailAngle)
+                    const py = ry * Math.sin(trailAngle)
+                    if (j === 0) ctx.moveTo(px, py)
+                    else ctx.lineTo(px, py)
+                }
                 ctx.strokeStyle = tail
                 ctx.lineWidth = root.cfg_beamWidth
                 ctx.lineCap = "round"
