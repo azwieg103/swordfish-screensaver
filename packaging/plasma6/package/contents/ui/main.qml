@@ -12,6 +12,9 @@ WallpaperItem {
     property int cfg_orbs: 3
     property int cfg_beamWidth: 25
     property real phase: (Date.now() / 1000.0) % 16000000
+    property date currentDate: new Date()
+    property string dateLabel: Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
+    property string timeLabel: Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
     property var palette: ({
         "classic": Qt.rgba(0.28, 1.0, 0.035, 1),
         "lime": Qt.rgba(0.62, 1.0, 0.015, 1),
@@ -25,6 +28,9 @@ WallpaperItem {
         repeat: true
         running: true
         onTriggered: {
+            root.currentDate = new Date()
+            root.dateLabel = Qt.formatDate(root.currentDate, Qt.locale().dateFormat(Locale.LongFormat))
+            root.timeLabel = Qt.formatTime(root.currentDate, root.cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
             root.phase = (Date.now() / 1000.0) % 16000000
             canvas.requestPaint()
         }
@@ -129,7 +135,7 @@ WallpaperItem {
             anchors.right: parent.right
             Text {
                 visible: root.cfg_showDate
-                text: Qt.formatDate(new Date(), Qt.locale().dateFormat(Locale.LongFormat))
+                text: root.dateLabel
                 color: "white"
                 font.pixelSize: 17
                 style: Text.Outline
@@ -137,7 +143,7 @@ WallpaperItem {
             }
             Text {
                 visible: root.cfg_showClock
-                text: Qt.formatTime(new Date(), root.cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
+                text: root.timeLabel
                 color: "white"
                 font.pixelSize: 28
                 font.bold: true
