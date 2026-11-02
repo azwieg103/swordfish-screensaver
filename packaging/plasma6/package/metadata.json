@@ -7,11 +7,11 @@
         "Email": "programming@zwiegnet.com"
       }
     ],
-    "Category": "情",
+    "Category": "Other",
     "Description": "Original synchronized green plasma animation with a per-display date and clock",
     "Icon": "preferences-desktop-wallpaper",
     "Id": "org.zwiegnet.swordfish",
-    "License": "MIT",
+    "License": "GPL-3.0-or-later",
     "Name": "Swordfish Plasma"
   },
   "X-Plasma-API-Minimum-Version": "6.0"
