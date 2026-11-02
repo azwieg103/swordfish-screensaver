@@ -40,6 +40,10 @@ available. The desktop environment remains responsible for secure locking.
 %{_bindir}/swordfish-screensaver
 %{_bindir}/swordfish-idle
 %{_datadir}/applications/swordfish-idle.desktop
+%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/metadata.json
+%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/config/main.xml
+%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/config.qml
+%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/main.qml
 
 %changelog
 * Sat Oct 31 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-2
