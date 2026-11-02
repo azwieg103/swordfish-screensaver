@@ -1,0 +1,149 @@
+import QtQuick
+import QtQuick.Controls
+import org.kde.plasma.plasmoid
+
+WallpaperItem {
+    id: root
+
+    property bool cfg_showClock: true
+    property bool cfg_showDate: true
+    property bool cfg_clock24Hour: true
+    property string cfg_green: "classic"
+    property int cfg_orbs: 3
+    property int cfg_beamWidth: 25
+    property real phase: (Date.now() / 1000.0) % 16000000
+    property var palette: ({
+        "classic": Qt.rgba(0.28, 1.0, 0.035, 1),
+        "lime": Qt.rgba(0.62, 1.0, 0.015, 1),
+        "emerald": Qt.rgba(0.02, 0.88, 0.34, 1),
+        "teal": Qt.rgba(0.02, 0.92, 0.72, 1)
+    })
+    property color plasmaColor: palette[cfg_green] || palette.classic
+
+    Timer {
+        interval: 33
+        repeat: true
+        running: true
+        onTriggered: {
+            root.phase = (Date.now() / 1000.0) % 16000000
+            canvas.requestPaint()
+        }
+    }
+
+    Canvas {
+        id: canvas
+        anchors.fill: parent
+        renderStrategy: Canvas.Threaded
+
+        onPaint: {
+            const ctx = getContext("2d")
+            const w = width
+            const h = height
+            const cx = w / 2
+            const cy = h / 2
+            const rx = w * 0.43
+            const ry = h * 0.43
+            const t = root.phase
+            const rev = (t % 50) < 25 ? 1 : -1
+            const within = (t % 25) / 5
+            const angle = rev > 0 ? within * Math.PI * 2 : (5 - within) * Math.PI * 2
+            const split = (t % 32)
+            const beams = split < 11 ? 1 : (split < 21 ? 4 : 2)
+            const glow = root.plasmaColor
+
+            ctx.reset()
+            ctx.fillStyle = "#010207"
+            ctx.fillRect(0, 0, w, h)
+            ctx.save()
+            ctx.translate(cx, cy)
+
+            // Dim circular plasma orbit and its luminous outer halo.
+            for (let layer = 7; layer >= 0; --layer) {
+                ctx.beginPath()
+                ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
+                ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b, 0.018 + layer * 0.009)
+                ctx.lineWidth = root.cfg_beamWidth * (0.55 + layer * 0.35)
+                ctx.stroke()
+            }
+            ctx.beginPath()
+            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
+            ctx.strokeStyle = "#baffc7"
+            ctx.lineWidth = 1.5
+            ctx.stroke()
+
+            // Beam heads share the same epoch-based phase on every monitor.
+            for (let b = 0; b < beams; ++b) {
+                const a = angle + (Math.PI * 2 * b / beams)
+                const x = rx * Math.cos(a)
+                const y = ry * Math.sin(a)
+                const tail = ctx.createLinearGradient(
+                    x - Math.cos(a) * rx * 0.42, y - Math.sin(a) * ry * 0.42, x, y)
+                tail.addColorStop(0, Qt.rgba(glow.r, glow.g, glow.b, 0))
+                tail.addColorStop(0.72, Qt.rgba(glow.r, glow.g, glow.b, 0.18))
+                tail.addColorStop(1, "#e7ffed")
+                ctx.beginPath()
+                ctx.moveTo(x - Math.cos(a) * rx * 0.42, y - Math.sin(a) * ry * 0.42)
+                ctx.quadraticCurveTo(x, y, x, y)
+                ctx.strokeStyle = tail
+                ctx.lineWidth = root.cfg_beamWidth
+                ctx.lineCap = "round"
+                ctx.stroke()
+                const head = ctx.createRadialGradient(x, y, 1, x, y, root.cfg_beamWidth * 2.8)
+                head.addColorStop(0, "#ffffff")
+                head.addColorStop(0.2, "#c9ffd2")
+                head.addColorStop(1, Qt.rgba(glow.r, glow.g, glow.b, 0))
+                ctx.fillStyle = head
+                ctx.beginPath()
+                ctx.arc(x, y, root.cfg_beamWidth * 2.8, 0, Math.PI * 2)
+                ctx.fill()
+            }
+
+            // Small orbiting plasma balls.
+            for (let i = 0; i < root.cfg_orbs; ++i) {
+                const a = angle + Math.PI * 2 * i / root.cfg_orbs
+                const x = rx * 0.72 * Math.cos(a)
+                const y = ry * 0.72 * Math.sin(a)
+                const radius = 7 + 3 * (i % 3)
+                const orb = ctx.createRadialGradient(x, y, 1, x, y, radius * 4)
+                orb.addColorStop(0, "#ffffff")
+                orb.addColorStop(0.22, glow)
+                orb.addColorStop(1, Qt.rgba(glow.r, glow.g, glow.b, 0))
+                ctx.fillStyle = orb
+                ctx.beginPath()
+                ctx.arc(x, y, radius * 4, 0, Math.PI * 2)
+                ctx.fill()
+            }
+            ctx.restore()
+        }
+    }
+
+    Item {
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: 30
+        anchors.bottomMargin: 24
+        visible: root.cfg_showClock || root.cfg_showDate
+
+        Column {
+            spacing: 2
+            anchors.right: parent.right
+            Text {
+                visible: root.cfg_showDate
+                text: Qt.formatDate(new Date(), Qt.locale().dateFormat(Locale.LongFormat))
+                color: "white"
+                font.pixelSize: 17
+                style: Text.Outline
+                styleColor: "#99000000"
+            }
+            Text {
+                visible: root.cfg_showClock
+                text: Qt.formatTime(new Date(), root.cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
+                color: "white"
+                font.pixelSize: 28
+                font.bold: true
+                style: Text.Outline
+                styleColor: "#99000000"
+            }
+        }
+    }
+}
