@@ -11,6 +11,12 @@ WallpaperItem {
     property string cfg_green: "classic"
     property int cfg_orbs: 3
     property int cfg_beamWidth: 25
+    // Qt's virtual-screen geometry is shared by every Plasma wallpaper instance.
+    // Each instance paints the same desktop-sized scene, clipped to its own output.
+    property real screenX: Screen.virtualX
+    property real screenY: Screen.virtualY
+    property real desktopWidth: Screen.virtualWidth > 0 ? Screen.virtualWidth : width
+    property real desktopHeight: Screen.virtualHeight > 0 ? Screen.virtualHeight : height
     property real phase: (Date.now() / 1000.0) % 16000000
     property date currentDate: new Date()
     property string dateLabel: Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
@@ -57,10 +63,12 @@ WallpaperItem {
             const ctx = getContext("2d")
             const w = width
             const h = height
-            const cx = w / 2
-            const cy = h / 2
-            const rx = w * 0.43
-            const ry = h * 0.43
+            const virtualWidth = Math.max(root.desktopWidth, w)
+            const virtualHeight = Math.max(root.desktopHeight, h)
+            const cx = virtualWidth / 2
+            const cy = virtualHeight / 2
+            const rx = virtualWidth * 0.43
+            const ry = virtualHeight * 0.43
             const t = root.phase
             const rev = (t % 50) < 25 ? 1 : -1
             const within = (t % 25) / 5
@@ -76,6 +84,9 @@ WallpaperItem {
             ctx.fillStyle = "#010207"
             ctx.fillRect(0, 0, w, h)
             ctx.save()
+            // Move this monitor's local canvas into virtual-desktop coordinates.
+            // Plasma clips the result to this wallpaper item's own screen.
+            ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
             // Dim circular plasma orbit and its luminous outer halo.
