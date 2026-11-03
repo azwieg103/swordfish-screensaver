@@ -22,6 +22,7 @@ add_library(swordfishgeometryplugin MODULE
 )
 target_link_libraries(swordfishgeometryplugin PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick)
 set_target_properties(swordfishgeometryplugin PROPERTIES
+    PREFIX "lib"
     OUTPUT_NAME "swordfishgeometryplugin"
 )
 set(SWORDFISH_GEOMETRY_DIR
