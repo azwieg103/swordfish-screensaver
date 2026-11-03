@@ -6,6 +6,8 @@ License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  cmake >= 3.20
+BuildRequires:  extra-cmake-modules
+BuildRequires:  kf6-plasma-devel
 BuildRequires:  gcc-c++
 BuildRequires:  git
 BuildRequires:  make
