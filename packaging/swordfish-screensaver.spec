@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -9,6 +9,8 @@ BuildRequires:  cmake >= 3.20
 BuildRequires:  gcc-c++
 BuildRequires:  git
 BuildRequires:  make
+BuildRequires:  qt6-qtbase-devel
+BuildRequires:  qt6-qtdeclarative-devel
 BuildRequires:  mesa-libGL-devel
 BuildRequires:  libX11-devel
 BuildRequires:  libXext-devel
@@ -48,8 +50,10 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/config/main.xml
 %{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/config.qml
 %{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/main.qml
+%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/org/zwiegnet/swordfish/geometry/qmldir
+%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/org/zwiegnet/swordfish/geometry/swordfishgeometryplugin.so
 
 %changelog
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-3
-- Use supported Qt virtual desktop dimensions for shared multi-monitor rendering.
-- Correct KDE wallpaper RPM installation command.
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-4
+- Add a QScreen-backed helper for dynamic virtual desktop and per-screen geometry.
+- Recalculate display geometry automatically when monitor layouts change.
