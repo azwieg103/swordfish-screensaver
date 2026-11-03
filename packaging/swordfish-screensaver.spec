@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        17%{?dist}
+Release:        18%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -57,6 +57,9 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-18
+- Preserve a single closed, connected orbit path and draw orb highlights over it.
+
 * Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-17
 - Restore the expected Item root for Plasma-injected wallpaper configuration properties.
 - Nest Kirigami.FormLayout beneath the configuration root.
