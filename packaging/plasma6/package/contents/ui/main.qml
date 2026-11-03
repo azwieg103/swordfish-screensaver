@@ -11,12 +11,14 @@ WallpaperItem {
     property string cfg_green: "classic"
     property int cfg_orbs: 3
     property int cfg_beamWidth: 25
-    // Qt's virtual-screen geometry is shared by every Plasma wallpaper instance.
-    // Each instance paints the same desktop-sized scene, clipped to its own output.
+
+    // Screen.virtualX/Y locate this wallpaper instance in the virtual desktop.
+    // desktopAvailableWidth/Height describe the complete virtual desktop area.
     property real screenX: Screen.virtualX
     property real screenY: Screen.virtualY
-    property real desktopWidth: Screen.virtualWidth > 0 ? Screen.virtualWidth : width
-    property real desktopHeight: Screen.virtualHeight > 0 ? Screen.virtualHeight : height
+    property real desktopWidth: Screen.desktopAvailableWidth > 0 ? Screen.desktopAvailableWidth : width
+    property real desktopHeight: Screen.desktopAvailableHeight > 0 ? Screen.desktopAvailableHeight : height
+
     property real phase: (Date.now() / 1000.0) % 16000000
     property date currentDate: new Date()
     property string dateLabel: Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
@@ -84,8 +86,10 @@ WallpaperItem {
             ctx.fillStyle = "#010207"
             ctx.fillRect(0, 0, w, h)
             ctx.save()
-            // Move this monitor's local canvas into virtual-desktop coordinates.
-            // Plasma clips the result to this wallpaper item's own screen.
+
+            // Convert virtual-desktop scene coordinates into this monitor's
+            // local Canvas coordinates. Each wallpaper instance paints the
+            // same scene; Plasma clips it to that instance's display.
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
