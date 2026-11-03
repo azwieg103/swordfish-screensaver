@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import org.kde.plasma.plasmoid
+import org.zwiegnet.swordfish.geometry 1.0
 
 WallpaperItem {
     id: root
@@ -12,12 +13,31 @@ WallpaperItem {
     property int cfg_orbs: 3
     property int cfg_beamWidth: 25
 
-    // Screen.virtualX/Y locate this wallpaper instance in the virtual desktop.
-    // desktopAvailableWidth/Height describe the complete virtual desktop area.
-    property real screenX: Screen.virtualX
-    property real screenY: Screen.virtualY
-    property real desktopWidth: Screen.desktopAvailableWidth > 0 ? Screen.desktopAvailableWidth : width
-    property real desktopHeight: Screen.desktopAvailableHeight > 0 ? Screen.desktopAvailableHeight : height
+    // Read geometry from QScreen, not QML's per-screen Screen attached object.
+    // virtualGeometry is the bounding rectangle of all connected displays.
+    property rect screenRect: Qt.rect(0, 0, width, height)
+    property rect desktopRect: Qt.rect(0, 0, width, height)
+    property real screenX: screenRect.x - desktopRect.x
+    property real screenY: screenRect.y - desktopRect.y
+    property real desktopWidth: Math.max(1, desktopRect.width)
+    property real desktopHeight: Math.max(1, desktopRect.height)
+
+    function refreshDisplayGeometry() {
+        const nextScreen = DisplayGeometry.screenGeometry(root)
+        const nextDesktop = DisplayGeometry.virtualGeometry(root)
+        if (nextScreen.width > 0 && nextScreen.height > 0)
+            screenRect = nextScreen
+        if (nextDesktop.width > 0 && nextDesktop.height > 0)
+            desktopRect = nextDesktop
+        canvas.requestPaint()
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: root.refreshDisplayGeometry()
+    }
 
     property real phase: (Date.now() / 1000.0) % 16000000
     property date currentDate: new Date()
@@ -54,7 +74,7 @@ WallpaperItem {
         timeLabel = Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
     }
 
-    Component.onCompleted: updateClock()
+    Component.onCompleted: { updateClock(); refreshDisplayGeometry() }
 
     Canvas {
         id: canvas
@@ -65,8 +85,8 @@ WallpaperItem {
             const ctx = getContext("2d")
             const w = width
             const h = height
-            const virtualWidth = Math.max(root.desktopWidth, w)
-            const virtualHeight = Math.max(root.desktopHeight, h)
+            const virtualWidth = root.desktopWidth
+            const virtualHeight = root.desktopHeight
             const cx = virtualWidth / 2
             const cy = virtualHeight / 2
             const rx = virtualWidth * 0.43
@@ -87,9 +107,8 @@ WallpaperItem {
             ctx.fillRect(0, 0, w, h)
             ctx.save()
 
-            // Convert virtual-desktop scene coordinates into this monitor's
-            // local Canvas coordinates. Each wallpaper instance paints the
-            // same scene; Plasma clips it to that instance's display.
+            // Draw in virtual-desktop coordinates, offset to this screen's
+            // origin. QScreen geometry handles negative and mixed coordinates.
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
