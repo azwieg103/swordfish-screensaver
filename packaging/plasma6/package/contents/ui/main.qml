@@ -116,7 +116,7 @@ WallpaperItem {
 
             // Draw one continuous, non-fading oval. Its brightness rises smoothly
             // around each moving orb, so the two heads visually illuminate the track.
-            const orbAngles = [angle, -angle + Math.PI]
+            const orbAngles = [angle, angle + Math.PI]
             const segments = 240
             for (let j = 0; j < segments; ++j) {
                 const a1 = j / segments * Math.PI * 2
@@ -142,7 +142,7 @@ WallpaperItem {
                 ctx.stroke()
             }
 
-            // Two compact plasma heads move in opposite directions. The oval
+            // Two compact plasma heads move in the same direction, spaced half an orbit apart. The oval
             // remains connected and visible behind them; only its brightness changes.
             for (let i = 0; i < 2; ++i) {
                 const a = orbAngles[i]
