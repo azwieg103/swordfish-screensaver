@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        15%{?dist}
+Release:        16%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -57,6 +57,10 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-16
+- Make Kirigami.FormLayout the configuration root expected by Plasma Screen Locker.
+- Expose injected configDialog and wallpaperConfiguration properties on the root object.
+
 * Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-15
 - Add KDE wallpaper controls for palette, orb count, speed, shape, direction, glow, orbit size, and beam width.
 - Apply configuration values directly to the multi-monitor animation.
