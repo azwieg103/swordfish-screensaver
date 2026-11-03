@@ -15,6 +15,11 @@ Item {
     property alias cfg_green: green.currentValue
     property alias cfg_beamWidth: beamWidth.value
     property alias cfg_speed: speed.value
+    property alias cfg_orbs: orbs.value
+    property alias cfg_shape: shape.currentValue
+    property alias cfg_direction: direction.currentValue
+    property alias cfg_glow: glow.value
+    property alias cfg_orbitSize: orbitSize.value
 
     Kirigami.FormLayout {
             anchors.fill: parent
@@ -40,7 +45,11 @@ Item {
             { text: i18n("Classic"), value: "classic" },
             { text: i18n("Lime"), value: "lime" },
             { text: i18n("Emerald"), value: "emerald" },
-            { text: i18n("Teal"), value: "teal" }
+            { text: i18n("Teal"), value: "teal" },
+            { text: i18n("Ice blue"), value: "ice" },
+            { text: i18n("Amber"), value: "amber" },
+            { text: i18n("Violet"), value: "violet" },
+            { text: i18n("White"), value: "white" }
         ]
     }
     RowLayout {
@@ -57,6 +66,44 @@ Item {
             Layout.minimumWidth: Kirigami.Units.gridUnit * 3
             horizontalAlignment: Text.AlignRight
         }
+    }
+    Controls.ComboBox {
+        id: shape
+        Kirigami.FormData.label: i18n("Orbit shape")
+        textRole: "text"
+        valueRole: "value"
+        model: [
+            { text: i18n("Oval"), value: "oval" },
+            { text: i18n("Circle"), value: "circle" },
+            { text: i18n("Wide oval"), value: "wide" },
+            { text: i18n("Tall oval"), value: "tall" }
+        ]
+    }
+    Controls.ComboBox {
+        id: direction
+        Kirigami.FormData.label: i18n("Travel direction")
+        textRole: "text"
+        valueRole: "value"
+        model: [
+            { text: i18n("Clockwise"), value: "clockwise" },
+            { text: i18n("Counterclockwise"), value: "counterclockwise" }
+        ]
+    }
+    Controls.SpinBox {
+        id: orbs
+        Kirigami.FormData.label: i18n("Number of orbs")
+        from: 1
+        to: 8
+    }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Glow intensity")
+        Controls.Slider { id: glow; from: 10; to: 100; stepSize: 5; Layout.fillWidth: true }
+        Controls.Label { text: glow.value + "%" }
+    }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Orbit size")
+        Controls.Slider { id: orbitSize; from: 50; to: 120; stepSize: 5; Layout.fillWidth: true }
+        Controls.Label { text: orbitSize.value + "%" }
     }
     Controls.SpinBox {
         id: beamWidth
