@@ -1,4 +1,5 @@
 #include <QQmlEngine>
+#include <QJSEngine>
 #include <QQmlExtensionPlugin>
 #include <qqml.h>
 
