@@ -13,6 +13,10 @@ WallpaperItem {
     property int cfg_orbs: 3
     property int cfg_beamWidth: 14
     property int cfg_speed: 10
+    property string cfg_shape: "oval"
+    property string cfg_direction: "clockwise"
+    property int cfg_glow: 70
+    property int cfg_orbitSize: 100
 
     // Read geometry from QScreen, not QML's per-screen Screen attached object.
     // virtualGeometry is the bounding rectangle of all connected displays.
@@ -48,7 +52,11 @@ WallpaperItem {
         "classic": Qt.rgba(0.28, 1.0, 0.035, 1),
         "lime": Qt.rgba(0.62, 1.0, 0.015, 1),
         "emerald": Qt.rgba(0.02, 0.88, 0.34, 1),
-        "teal": Qt.rgba(0.02, 0.92, 0.72, 1)
+        "teal": Qt.rgba(0.02, 0.92, 0.72, 1),
+        "ice": Qt.rgba(0.18, 0.88, 1.0, 1),
+        "amber": Qt.rgba(1.0, 0.58, 0.08, 1),
+        "violet": Qt.rgba(0.72, 0.35, 1.0, 1),
+        "white": Qt.rgba(0.88, 1.0, 1.0, 1)
     })
     property color plasmaColor: palette[cfg_green] || palette.classic
 
@@ -91,18 +99,23 @@ WallpaperItem {
             const cx = virtualWidth / 2
             const cy = virtualHeight / 2
             // One wide oval spans the virtual desktop and crosses all displays.
-            const rx = virtualWidth * 0.43
-            const ry = virtualHeight * 0.36
+            const scale = root.cfg_orbitSize / 100.0
+            let rx = virtualWidth * 0.43 * scale
+            let ry = virtualHeight * 0.36 * scale
+            if (root.cfg_shape === "circle") {
+                rx = Math.min(virtualWidth, virtualHeight) * 0.40 * scale
+                ry = rx
+            } else if (root.cfg_shape === "wide") {
+                ry *= 0.62
+            } else if (root.cfg_shape === "tall") {
+                rx *= 0.62
+            }
             const t = root.phase * root.cfg_speed / 10.0
-            const angle = t * Math.PI * 2 / 18.0
+            const direction = root.cfg_direction === "counterclockwise" ? -1 : 1
+            const angle = direction * t * Math.PI * 2 / 18.0
             const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 3.2)
             const glow = root.plasmaColor
-            const greens = [
-                Qt.rgba(0.22, 1.0, 0.025, 1),
-                Qt.rgba(0.02, 0.95, 0.28, 1),
-                Qt.rgba(0.42, 1.0, 0.08, 1),
-                Qt.rgba(0.02, 0.78, 0.48, 1)
-            ]
+            const greens = [glow, glow, glow, glow]
 
             ctx.reset()
             ctx.fillStyle = "#010207"
@@ -116,19 +129,22 @@ WallpaperItem {
 
             // Draw one continuous, non-fading oval. Its brightness rises smoothly
             // around each moving orb, so the two heads visually illuminate the track.
-            const orbAngles = [angle, angle + Math.PI]
+            const orbCount = Math.max(1, Math.min(8, root.cfg_orbs))
+            const orbAngles = []
+            for (let i = 0; i < orbCount; ++i)
+                orbAngles.push(angle + i * Math.PI * 2 / orbCount)
             const segments = 240
             for (let j = 0; j < segments; ++j) {
                 const a1 = j / segments * Math.PI * 2
                 const a2 = (j + 1) / segments * Math.PI * 2
                 const mid = (a1 + a2) / 2
                 let energy = 0
-                for (let i = 0; i < 2; ++i) {
+                for (let i = 0; i < orbAngles.length; ++i) {
                     let delta = Math.abs(mid - orbAngles[i]) % (Math.PI * 2)
                     if (delta > Math.PI) delta = Math.PI * 2 - delta
                     energy = Math.max(energy, Math.exp(-(delta * delta) / (2 * 0.48 * 0.48)))
                 }
-                const brightness = 0.38 + energy * (0.62 + pulse * 0.22)
+                const brightness = 0.18 + energy * (0.82 + pulse * 0.18) * root.cfg_glow / 100.0
                 const green = greens[0]
                 ctx.beginPath()
                 ctx.moveTo(rx * Math.cos(a1), ry * Math.sin(a1))
@@ -137,20 +153,20 @@ WallpaperItem {
                     Math.min(1, green.r * brightness),
                     Math.min(1, green.g * brightness),
                     Math.min(1, green.b * brightness), 1)
-                ctx.lineWidth = 1.5
+                ctx.lineWidth = 0.7 + root.cfg_beamWidth / 10.0
                 ctx.lineCap = "round"
                 ctx.stroke()
             }
 
             // Two compact plasma heads move in the same direction, spaced half an orbit apart. The oval
             // remains connected and visible behind them; only its brightness changes.
-            for (let i = 0; i < 2; ++i) {
+            for (let i = 0; i < orbAngles.length; ++i) {
                 const a = orbAngles[i]
                 const x = rx * Math.cos(a)
                 const y = ry * Math.sin(a)
-                const color = greens[i]
+                const color = glow
                 const orbPulse = 0.82 + 0.18 * Math.sin(t * 2.0 + i * 2.4)
-                const headRadius = 6.0 * orbPulse
+                const headRadius = (3.0 + root.cfg_beamWidth * 0.22) * orbPulse
                 const halo = ctx.createRadialGradient(x, y, 1, x, y, headRadius * 2.8)
                 halo.addColorStop(0, "#ffffff")
                 halo.addColorStop(0.24, color)
