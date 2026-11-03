@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        9%{?dist}
+Release:        10%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -57,6 +57,11 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-10
+- Change the continuous orbit from circular to wide oval geometry.
+- Use exactly two glowing comet orbs traveling in opposite directions.
+- Add configurable animation speed from 0.1x to 3.0x.
+
 * Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-9
 - Restore one continuous circular orbit spanning the virtual desktop.
 - Use a single reversing comet, thicker pulsing ring, and multiple glowing green orbs.
