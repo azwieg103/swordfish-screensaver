@@ -44,7 +44,7 @@ WallpaperItem {
         onTriggered: root.refreshDisplayGeometry()
     }
 
-    property real phase: (Date.now() / 1000.0) % 16000000
+    property real phase: Date.now() / 1000.0
     property date currentDate: new Date()
     property string dateLabel: Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
     property string timeLabel: Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
@@ -65,7 +65,9 @@ WallpaperItem {
         repeat: true
         running: true
         onTriggered: {
-            root.phase = (Date.now() / 1000.0) % 16000000
+            // Derive animation position from wall-clock elapsed time. A delayed
+            // frame skips ahead naturally instead of accumulating timer drift.
+            root.phase = Date.now() / 1000.0
             canvas.requestPaint()
         }
     }
@@ -127,51 +129,56 @@ WallpaperItem {
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
-            // Draw one continuous, non-fading oval. Its brightness rises smoothly
-            // around each moving orb, so the two heads visually illuminate the track.
+            // Keep the orbit as one inexpensive continuous ellipse stroke.
+            // Local highlights are short arcs near each orb, not hundreds of
+            // individually stroked line segments on every frame.
             const orbCount = Math.max(1, Math.min(8, root.cfg_orbs))
             const orbAngles = []
             for (let i = 0; i < orbCount; ++i)
                 orbAngles.push(angle + i * Math.PI * 2 / orbCount)
-            const segments = 240
-            for (let j = 0; j < segments; ++j) {
-                const a1 = j / segments * Math.PI * 2
-                const a2 = (j + 1) / segments * Math.PI * 2
-                const mid = (a1 + a2) / 2
-                let energy = 0
-                for (let i = 0; i < orbAngles.length; ++i) {
-                    let delta = Math.abs(mid - orbAngles[i]) % (Math.PI * 2)
-                    if (delta > Math.PI) delta = Math.PI * 2 - delta
-                    energy = Math.max(energy, Math.exp(-(delta * delta) / (2 * 0.48 * 0.48)))
-                }
-                const brightness = 0.18 + energy * (0.82 + pulse * 0.18) * root.cfg_glow / 100.0
-                const green = greens[0]
+
+            const trackWidth = 0.7 + root.cfg_beamWidth / 10.0
+            const glowLevel = root.cfg_glow / 100.0
+            ctx.beginPath()
+            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
+            ctx.strokeStyle = Qt.rgba(glow.r * 0.24, glow.g * 0.24, glow.b * 0.24, 1)
+            ctx.lineWidth = trackWidth
+            ctx.lineCap = "round"
+            ctx.stroke()
+
+            // Illuminate a small section of the track around each orb.
+            for (let i = 0; i < orbAngles.length; ++i) {
+                const center = orbAngles[i]
+                const halfSpan = 0.48
                 ctx.beginPath()
-                ctx.moveTo(rx * Math.cos(a1), ry * Math.sin(a1))
-                ctx.lineTo(rx * Math.cos(a2), ry * Math.sin(a2))
+                for (let j = 0; j <= 20; ++j) {
+                    const a = center - halfSpan + (j / 20) * halfSpan * 2
+                    const x = rx * Math.cos(a)
+                    const y = ry * Math.sin(a)
+                    if (j === 0) ctx.moveTo(x, y)
+                    else ctx.lineTo(x, y)
+                }
                 ctx.strokeStyle = Qt.rgba(
-                    Math.min(1, green.r * brightness),
-                    Math.min(1, green.g * brightness),
-                    Math.min(1, green.b * brightness), 1)
-                ctx.lineWidth = 0.7 + root.cfg_beamWidth / 10.0
-                ctx.lineCap = "round"
+                    glow.r * (0.45 + glowLevel * 0.55),
+                    glow.g * (0.45 + glowLevel * 0.55),
+                    glow.b * (0.45 + glowLevel * 0.55), 1)
+                ctx.lineWidth = trackWidth * (1.15 + glowLevel * 0.35)
                 ctx.stroke()
             }
 
-            // Two compact plasma heads move in the same direction, spaced half an orbit apart. The oval
-            // remains connected and visible behind them; only its brightness changes.
+            // Draw the moving heads. Their spacing and direction follow the
+            // same phase, so they never pause when a paint event is delayed.
             for (let i = 0; i < orbAngles.length; ++i) {
                 const a = orbAngles[i]
                 const x = rx * Math.cos(a)
                 const y = ry * Math.sin(a)
-                const color = glow
-                const orbPulse = 0.82 + 0.18 * Math.sin(t * 2.0 + i * 2.4)
+                const orbPulse = 0.90 + 0.10 * Math.sin(t * 2.0 + i * 2.4)
                 const headRadius = (3.0 + root.cfg_beamWidth * 0.22) * orbPulse
                 const halo = ctx.createRadialGradient(x, y, 1, x, y, headRadius * 2.8)
                 halo.addColorStop(0, "#ffffff")
-                halo.addColorStop(0.24, color)
-                halo.addColorStop(0.62, Qt.rgba(color.r, color.g, color.b, 0.38))
-                halo.addColorStop(1, Qt.rgba(color.r, color.g, color.b, 0))
+                halo.addColorStop(0.24, glow)
+                halo.addColorStop(0.62, Qt.rgba(glow.r, glow.g, glow.b, 0.38))
+                halo.addColorStop(1, Qt.rgba(glow.r, glow.g, glow.b, 0))
                 ctx.fillStyle = halo
                 ctx.beginPath()
                 ctx.arc(x, y, headRadius * 2.8, 0, Math.PI * 2)
