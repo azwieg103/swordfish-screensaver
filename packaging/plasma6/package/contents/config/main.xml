@@ -6,7 +6,6 @@
     <entry name="showDate" type="Bool"><default>true</default></entry>
     <entry name="clock24Hour" type="Bool"><default>true</default></entry>
     <entry name="green" type="String"><default>classic</default></entry>
-    <entry name="orbs" type="Int"><default>3</default></entry>
     <entry name="beamWidth" type="Int"><default>14</default></entry>
     <entry name="speed" type="Int"><default>10</default></entry>
   </group>
