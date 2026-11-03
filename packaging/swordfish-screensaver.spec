@@ -57,11 +57,11 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/swordfishgeometryplugin.so
 
 %changelog
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-6
+- Install the geometry QML module in Qt's standard import directory for the lock screen.
+- Expose the wallpaper configuration properties expected by the Screen Locker KCM.
+
 * Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-5
 - Use the Plasma CMake package exported by libplasma-devel.
 - Add libplasma-devel and kf6-kcoreaddons-devel build dependencies.
 - Keep RPM build dependencies aligned with AlmaLinux 10 packaging.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-6
-- Install the geometry QML module in Qt's standard import directory for the lock screen.
-- Expose the wallpaper configuration properties expected by the Screen Locker KCM.
