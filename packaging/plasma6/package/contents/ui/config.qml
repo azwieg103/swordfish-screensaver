@@ -17,11 +17,11 @@ Item {
     property alias cfg_beamWidth: beamWidth.value
 
     Kirigami.FormLayout {
-        anchors.fill: parent
-    Controls.CheckBox {
-        id: showClock
-        Kirigami.FormData.label: i18n("Clock")
-        text: i18n("Show time")
+            anchors.fill: parent
+        Controls.CheckBox {
+            id: showClock
+            Kirigami.FormData.label: i18n("Clock")
+            text: i18n("Show time")
     }
     Controls.CheckBox {
         id: showDate
