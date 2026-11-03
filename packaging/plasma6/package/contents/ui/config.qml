@@ -13,7 +13,6 @@ Item {
     property alias cfg_showDate: showDate.checked
     property alias cfg_clock24Hour: clock24Hour.checked
     property alias cfg_green: green.currentValue
-    property alias cfg_orbs: orbs.value
     property alias cfg_beamWidth: beamWidth.value
     property alias cfg_speed: speed.value
 
@@ -44,19 +43,20 @@ Item {
             { text: i18n("Teal"), value: "teal" }
         ]
     }
-    Controls.SpinBox {
-        id: orbs
-        Kirigami.FormData.label: i18n("Plasma orbs")
-        from: 1
-        to: 8
-    }
-    Controls.SpinBox {
-        id: speed
+    RowLayout {
         Kirigami.FormData.label: i18n("Animation speed")
-        from: 1
-        to: 30
-        textFromValue: function(value) { return (value / 10).toFixed(1) + "x" }
-        valueFromText: function(text) { return Math.round(parseFloat(text) * 10) }
+        Controls.Slider {
+            id: speed
+            from: 1
+            to: 30
+            stepSize: 1
+            Layout.fillWidth: true
+        }
+        Controls.Label {
+            text: (speed.value / 10).toFixed(1) + "x"
+            Layout.minimumWidth: Kirigami.Units.gridUnit * 3
+            horizontalAlignment: Text.AlignRight
+        }
     }
     Controls.SpinBox {
         id: beamWidth
