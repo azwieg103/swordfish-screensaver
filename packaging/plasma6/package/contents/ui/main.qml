@@ -11,7 +11,7 @@ WallpaperItem {
     property bool cfg_clock24Hour: true
     property string cfg_green: "classic"
     property int cfg_orbs: 3
-    property int cfg_beamWidth: 25
+    property int cfg_beamWidth: 14
     property int cfg_speed: 10
 
     // Read geometry from QScreen, not QML's per-screen Screen attached object.
@@ -120,7 +120,7 @@ WallpaperItem {
                 ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
                 ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b,
                                           (0.035 + pulse * 0.025) / layer)
-                ctx.lineWidth = root.cfg_beamWidth * (1.8 + layer * 1.25) * (0.9 + pulse * 0.12)
+                ctx.lineWidth = root.cfg_beamWidth * (1.2 + layer * 0.85) * (0.9 + pulse * 0.12)
                 ctx.stroke()
             }
             ctx.beginPath()
