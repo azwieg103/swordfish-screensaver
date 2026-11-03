@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -36,8 +36,7 @@ available. The desktop environment remains responsible for secure locking.
 
 # Install the KDE Plasma 6 wallpaper package
 mkdir -p %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish
-cp -a packaging/plasma6/package/. \\
-  %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/
+cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/
 
 %files
 %license LICENSE
@@ -51,6 +50,6 @@ cp -a packaging/plasma6/package/. \\
 %{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/main.qml
 
 %changelog
-* Mon Nov 02 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-2
-- Render KDE wallpaper instances against shared virtual desktop geometry.
-- Preserve per-monitor clock and date overlays.
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-3
+- Use supported Qt virtual desktop dimensions for shared multi-monitor rendering.
+- Correct KDE wallpaper RPM installation command.
