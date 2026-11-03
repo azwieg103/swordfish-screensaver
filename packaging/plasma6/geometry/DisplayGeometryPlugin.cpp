@@ -19,3 +19,5 @@ public:
             });
     }
 };
+
+#include "DisplayGeometryPlugin.moc"
