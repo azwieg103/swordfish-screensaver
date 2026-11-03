@@ -8,17 +8,14 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(FeatureSummary)
 
-find_package(KF6 REQUIRED COMPONENTS Plasma)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml)
+# AlmaLinux/Fedora package libplasma-devel exports the Plasma CMake package.
+find_package(Plasma REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick)
 
 plasma_install_package(package org.zwiegnet.swordfish wallpapers wallpaper)
-feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
-
 
 # Native Qt helper: QScreen supplies the real virtual desktop geometry and
 # each wallpaper window's actual screen geometry.
-find_package(Qt6 REQUIRED COMPONENTS Quick)
-
 add_library(swordfishgeometryplugin MODULE
     geometry/DisplayGeometry.cpp
     geometry/DisplayGeometryPlugin.cpp
@@ -32,3 +29,5 @@ set(SWORDFISH_GEOMETRY_DIR
     "${KDE_INSTALL_DATADIR}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/org/zwiegnet/swordfish/geometry")
 install(TARGETS swordfishgeometryplugin LIBRARY DESTINATION "${SWORDFISH_GEOMETRY_DIR}")
 install(FILES geometry/qmldir DESTINATION "${SWORDFISH_GEOMETRY_DIR}")
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
