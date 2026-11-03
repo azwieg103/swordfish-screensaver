@@ -113,11 +113,11 @@ WallpaperItem {
             ctx.translate(cx, cy)
 
             // Dim circular plasma orbit and its luminous outer halo.
-            for (let layer = 7; layer >= 0; --layer) {
+            for (let layer = 3; layer >= 0; --layer) {
                 ctx.beginPath()
                 ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
-                ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b, 0.018 + layer * 0.009)
-                ctx.lineWidth = root.cfg_beamWidth * (0.55 + layer * 0.35)
+                ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b, 0.025 + layer * 0.018)
+                ctx.lineWidth = root.cfg_beamWidth * (0.75 + layer * 0.55)
                 ctx.stroke()
             }
             ctx.beginPath()
@@ -137,9 +137,9 @@ WallpaperItem {
                 tail.addColorStop(0.72, Qt.rgba(glow.r, glow.g, glow.b, 0.18))
                 tail.addColorStop(1, "#e7ffed")
                 ctx.beginPath()
-                for (let j = 0; j <= 80; ++j) {
-                    const u = j / 80
-                    const trailAngle = a - rev * 1.25 * (1 - u)
+                for (let j = 0; j <= 32; ++j) {
+                    const u = j / 32
+                    const trailAngle = a - rev * 1.05 * (1 - u)
                     const px = rx * Math.cos(trailAngle)
                     const py = ry * Math.sin(trailAngle)
                     if (j === 0) ctx.moveTo(px, py)
