@@ -15,6 +15,7 @@ Item {
     property alias cfg_green: green.currentValue
     property alias cfg_orbs: orbs.value
     property alias cfg_beamWidth: beamWidth.value
+    property alias cfg_speed: speed.value
 
     Kirigami.FormLayout {
             anchors.fill: parent
@@ -48,6 +49,14 @@ Item {
         Kirigami.FormData.label: i18n("Plasma orbs")
         from: 1
         to: 8
+    }
+    Controls.SpinBox {
+        id: speed
+        Kirigami.FormData.label: i18n("Animation speed")
+        from: 1
+        to: 30
+        textFromValue: function(value) { return (value / 10).toFixed(1) + "x" }
+        valueFromText: function(text) { return Math.round(parseFloat(text) * 10) }
     }
     Controls.SpinBox {
         id: beamWidth
