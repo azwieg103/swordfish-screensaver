@@ -12,6 +12,7 @@ WallpaperItem {
     property string cfg_green: "classic"
     property int cfg_orbs: 3
     property int cfg_beamWidth: 25
+    property int cfg_speed: 10
 
     // Read geometry from QScreen, not QML's per-screen Screen attached object.
     // virtualGeometry is the bounding rectangle of all connected displays.
@@ -89,14 +90,11 @@ WallpaperItem {
             const virtualHeight = root.desktopHeight
             const cx = virtualWidth / 2
             const cy = virtualHeight / 2
-            // One circular orbit spans the virtual desktop and crosses all displays.
-            const orbitRadius = Math.min(virtualWidth, virtualHeight) * 0.43
-            const rx = orbitRadius
-            const ry = orbitRadius
-            const t = root.phase
-            const rev = (t % 50) < 25 ? 1 : -1
-            const within = (t % 25) / 25
-            const angle = rev > 0 ? within * Math.PI * 2 : (1 - within) * Math.PI * 2
+            // One wide oval spans the virtual desktop and crosses all displays.
+            const rx = virtualWidth * 0.43
+            const ry = virtualHeight * 0.36
+            const t = root.phase * root.cfg_speed / 10.0
+            const angle = t * Math.PI * 2 / 18.0
             const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 3.2)
             const glow = root.plasmaColor
             const greens = [
@@ -116,19 +114,18 @@ WallpaperItem {
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
-            // A single thick ring with a soft, breathing green halo.
+            // Thick oval track with a soft, breathing green halo.
             for (let layer = 3; layer >= 1; --layer) {
                 ctx.beginPath()
-                ctx.arc(0, 0, orbitRadius, 0, Math.PI * 2)
+                ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
                 ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b,
                                           (0.035 + pulse * 0.025) / layer)
                 ctx.lineWidth = root.cfg_beamWidth * (1.8 + layer * 1.25) * (0.9 + pulse * 0.12)
                 ctx.stroke()
             }
             ctx.beginPath()
-            ctx.arc(0, 0, orbitRadius, 0, Math.PI * 2)
-            const ringGradient = ctx.createLinearGradient(-orbitRadius, -orbitRadius,
-                                                            orbitRadius, orbitRadius)
+            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
+            const ringGradient = ctx.createLinearGradient(-rx, -ry, rx, ry)
             ringGradient.addColorStop(0, "#18e85b")
             ringGradient.addColorStop(0.32, "#a5ff42")
             ringGradient.addColorStop(0.62, "#00d878")
@@ -137,55 +134,43 @@ WallpaperItem {
             ctx.lineWidth = root.cfg_beamWidth * (0.62 + pulse * 0.12)
             ctx.stroke()
 
-            // One bright comet travels around the ring, reversing direction periodically.
-            const x = orbitRadius * Math.cos(angle)
-            const y = orbitRadius * Math.sin(angle)
-            const tail = ctx.createLinearGradient(
-                orbitRadius * Math.cos(angle - rev * 0.9),
-                orbitRadius * Math.sin(angle - rev * 0.9), x, y)
-            tail.addColorStop(0, Qt.rgba(0.05, 1.0, 0.25, 0))
-            tail.addColorStop(0.72, Qt.rgba(0.25, 1.0, 0.12, 0.7))
-            tail.addColorStop(1, "#efffed")
-            ctx.beginPath()
-            for (let j = 0; j <= 40; ++j) {
-                const u = j / 40
-                const trailAngle = angle - rev * 0.9 * (1 - u)
-                const px = orbitRadius * Math.cos(trailAngle)
-                const py = orbitRadius * Math.sin(trailAngle)
-                if (j === 0) ctx.moveTo(px, py)
-                else ctx.lineTo(px, py)
-            }
-            ctx.strokeStyle = tail
-            ctx.lineWidth = root.cfg_beamWidth * (0.9 + pulse * 0.2)
-            ctx.lineCap = "round"
-            ctx.stroke()
-
-            const headRadius = root.cfg_beamWidth * (1.8 + pulse * 0.45)
-            const head = ctx.createRadialGradient(x, y, 1, x, y, headRadius)
-            head.addColorStop(0, "#ffffff")
-            head.addColorStop(0.25, "#d8ffd0")
-            head.addColorStop(1, Qt.rgba(0.05, 1.0, 0.25, 0))
-            ctx.fillStyle = head
-            ctx.beginPath()
-            ctx.arc(x, y, headRadius, 0, Math.PI * 2)
-            ctx.fill()
-
-            // Multiple plasma orbs follow the same continuous circular path.
-            for (let i = 0; i < root.cfg_orbs; ++i) {
-                const orbAngle = angle + Math.PI * 2 * i / Math.max(1, root.cfg_orbs)
-                const ox = orbitRadius * Math.cos(orbAngle)
-                const oy = orbitRadius * Math.sin(orbAngle)
-                const orbPulse = 0.65 + 0.35 * Math.sin(t * 2.1 + i * 1.7)
-                const radius = (7 + 2 * (i % 3)) * orbPulse
-                const orb = ctx.createRadialGradient(ox, oy, 1, ox, oy, radius * 3.8)
-                const color = greens[i % greens.length]
-                orb.addColorStop(0, "#ffffff")
-                orb.addColorStop(0.2, color)
-                orb.addColorStop(0.58, Qt.rgba(color.r, color.g, color.b, 0.35))
-                orb.addColorStop(1, Qt.rgba(color.r, color.g, color.b, 0))
-                ctx.fillStyle = orb
+            // Exactly two glowing comet-orbs travel in opposite directions.
+            for (let i = 0; i < 2; ++i) {
+                const direction = i === 0 ? 1 : -1
+                const a = angle * direction + (i === 1 ? Math.PI : 0)
+                const x = rx * Math.cos(a)
+                const y = ry * Math.sin(a)
+                const tailAngle = 0.95
+                const color = greens[i]
+                const tail = ctx.createLinearGradient(
+                    rx * Math.cos(a - direction * tailAngle),
+                    ry * Math.sin(a - direction * tailAngle), x, y)
+                tail.addColorStop(0, Qt.rgba(color.r, color.g, color.b, 0))
+                tail.addColorStop(0.68, Qt.rgba(color.r, color.g, color.b, 0.72))
+                tail.addColorStop(1, "#f4fff0")
                 ctx.beginPath()
-                ctx.arc(ox, oy, radius * 3.8, 0, Math.PI * 2)
+                for (let j = 0; j <= 36; ++j) {
+                    const u = j / 36
+                    const trailA = a - direction * tailAngle * (1 - u)
+                    const px = rx * Math.cos(trailA)
+                    const py = ry * Math.sin(trailA)
+                    if (j === 0) ctx.moveTo(px, py)
+                    else ctx.lineTo(px, py)
+                }
+                ctx.strokeStyle = tail
+                ctx.lineWidth = root.cfg_beamWidth * (0.95 + pulse * 0.25)
+                ctx.lineCap = "round"
+                ctx.stroke()
+
+                const orbPulse = 0.7 + 0.3 * Math.sin(t * 2.0 + i * 2.4)
+                const headRadius = root.cfg_beamWidth * (1.7 + pulse * 0.4) * orbPulse
+                const head = ctx.createRadialGradient(x, y, 1, x, y, headRadius)
+                head.addColorStop(0, "#ffffff")
+                head.addColorStop(0.24, color)
+                head.addColorStop(1, Qt.rgba(color.r, color.g, color.b, 0))
+                ctx.fillStyle = head
+                ctx.beginPath()
+                ctx.arc(x, y, headRadius, 0, Math.PI * 2)
                 ctx.fill()
             }
             ctx.restore()
