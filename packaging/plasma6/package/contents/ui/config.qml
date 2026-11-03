@@ -3,9 +3,9 @@ import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Item {
-    // KDE Plasma 6 Screen Locker injects these properties when opening
-    // the wallpaper configuration page.
+Kirigami.FormLayout {
+    // Plasma's Screen Locker KCM injects these properties into the root
+    // wallpaper configuration object.
     property var configDialog
     property var wallpaperConfiguration
 
@@ -21,8 +21,6 @@ Item {
     property alias cfg_glow: glow.value
     property alias cfg_orbitSize: orbitSize.value
 
-    Kirigami.FormLayout {
-            anchors.fill: parent
         Controls.CheckBox {
             id: showClock
             Kirigami.FormData.label: i18n("Clock")
@@ -110,6 +108,5 @@ Item {
         Kirigami.FormData.label: i18n("Beam width")
         from: 5
         to: 60
-    }
     }
 }
