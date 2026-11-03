@@ -26,7 +26,7 @@ set_target_properties(swordfishgeometryplugin PROPERTIES
     OUTPUT_NAME "swordfishgeometryplugin"
 )
 set(SWORDFISH_GEOMETRY_DIR
-    "${KDE_INSTALL_DATADIR}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/org/zwiegnet/swordfish/geometry")
+    "${KDE_INSTALL_QMLDIR}/org/zwiegnet/swordfish/geometry")
 install(TARGETS swordfishgeometryplugin LIBRARY DESTINATION "${SWORDFISH_GEOMETRY_DIR}")
 install(FILES geometry/qmldir DESTINATION "${SWORDFISH_GEOMETRY_DIR}")
 
