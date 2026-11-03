@@ -1,0 +1,2 @@
+module org.zwiegnet.swordfish.geometry
+plugin swordfishgeometryplugin
