@@ -9,8 +9,6 @@ Item {
     property var configDialog
     property var wallpaperConfiguration
 
-    Kirigami.FormLayout {
-        anchors.fill: parent
     property alias cfg_showClock: showClock.checked
     property alias cfg_showDate: showDate.checked
     property alias cfg_clock24Hour: clock24Hour.checked
@@ -18,6 +16,8 @@ Item {
     property alias cfg_orbs: orbs.value
     property alias cfg_beamWidth: beamWidth.value
 
+    Kirigami.FormLayout {
+        anchors.fill: parent
     Controls.CheckBox {
         id: showClock
         Kirigami.FormData.label: i18n("Clock")
