@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -57,7 +57,8 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-7
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-8
+- Explicitly set the QML plugin library prefix to lib for Linux builds.
 - Restore the standard lib prefix required by Qt QML plugin loading.
 - Install the geometry QML module in Qt's standard import directory for the lock screen.
 - Expose the wallpaper configuration properties expected by the Screen Locker KCM.
