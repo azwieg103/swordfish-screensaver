@@ -114,63 +114,51 @@ WallpaperItem {
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
-            // Original delicate single-line orbit with a restrained soft halo.
-            for (let layer = 5; layer >= 1; --layer) {
-                ctx.beginPath()
-                ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
-                ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b,
-                                          (0.025 + pulse * 0.018) / layer)
-                ctx.lineWidth = 1.5 + layer * 0.8
-                ctx.stroke()
-            }
-            ctx.beginPath()
-            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
-            const ringGradient = ctx.createLinearGradient(-rx, -ry, rx, ry)
-            ringGradient.addColorStop(0, "#18e85b")
-            ringGradient.addColorStop(0.32, "#a5ff42")
-            ringGradient.addColorStop(0.62, "#00d878")
-            ringGradient.addColorStop(1, "#55ff18")
-            ctx.strokeStyle = ringGradient
-            ctx.lineWidth = 1.6 + pulse * 0.5
-            ctx.stroke()
-
-            // Exactly two glowing comet-orbs travel in opposite directions.
-            for (let i = 0; i < 2; ++i) {
-                const direction = i === 0 ? 1 : -1
-                const a = angle * direction + (i === 1 ? Math.PI : 0)
-                const x = rx * Math.cos(a)
-                const y = ry * Math.sin(a)
-                const tailAngle = 0.95
-                const color = greens[i]
-                const tail = ctx.createLinearGradient(
-                    rx * Math.cos(a - direction * tailAngle),
-                    ry * Math.sin(a - direction * tailAngle), x, y)
-                tail.addColorStop(0, Qt.rgba(color.r, color.g, color.b, 0))
-                tail.addColorStop(0.68, Qt.rgba(color.r, color.g, color.b, 0.72))
-                tail.addColorStop(1, "#f4fff0")
-                ctx.beginPath()
-                for (let j = 0; j <= 36; ++j) {
-                    const u = j / 36
-                    const trailA = a - direction * tailAngle * (1 - u)
-                    const px = rx * Math.cos(trailA)
-                    const py = ry * Math.sin(trailA)
-                    if (j === 0) ctx.moveTo(px, py)
-                    else ctx.lineTo(px, py)
+            // Draw one continuous, non-fading oval. Its brightness rises smoothly
+            // around each moving orb, so the two heads visually illuminate the track.
+            const orbAngles = [angle, -angle + Math.PI]
+            const segments = 240
+            for (let j = 0; j < segments; ++j) {
+                const a1 = j / segments * Math.PI * 2
+                const a2 = (j + 1) / segments * Math.PI * 2
+                const mid = (a1 + a2) / 2
+                let energy = 0
+                for (let i = 0; i < 2; ++i) {
+                    let delta = Math.abs(mid - orbAngles[i]) % (Math.PI * 2)
+                    if (delta > Math.PI) delta = Math.PI * 2 - delta
+                    energy = Math.max(energy, Math.exp(-(delta * delta) / (2 * 0.48 * 0.48)))
                 }
-                ctx.strokeStyle = tail
-                ctx.lineWidth = 3.0 + pulse * 0.8
+                const brightness = 0.38 + energy * (0.62 + pulse * 0.22)
+                const green = greens[0]
+                ctx.beginPath()
+                ctx.moveTo(rx * Math.cos(a1), ry * Math.sin(a1))
+                ctx.lineTo(rx * Math.cos(a2), ry * Math.sin(a2))
+                ctx.strokeStyle = Qt.rgba(
+                    Math.min(1, green.r * brightness),
+                    Math.min(1, green.g * brightness),
+                    Math.min(1, green.b * brightness), 1)
+                ctx.lineWidth = 1.5
                 ctx.lineCap = "round"
                 ctx.stroke()
+            }
 
-                const orbPulse = 0.7 + 0.3 * Math.sin(t * 2.0 + i * 2.4)
-                const headRadius = (7.0 + pulse * 2.0) * orbPulse
-                const head = ctx.createRadialGradient(x, y, 1, x, y, headRadius)
-                head.addColorStop(0, "#ffffff")
-                head.addColorStop(0.24, color)
-                head.addColorStop(1, Qt.rgba(color.r, color.g, color.b, 0))
-                ctx.fillStyle = head
+            // Two compact plasma heads move in opposite directions. The oval
+            // remains connected and visible behind them; only its brightness changes.
+            for (let i = 0; i < 2; ++i) {
+                const a = orbAngles[i]
+                const x = rx * Math.cos(a)
+                const y = ry * Math.sin(a)
+                const color = greens[i]
+                const orbPulse = 0.82 + 0.18 * Math.sin(t * 2.0 + i * 2.4)
+                const headRadius = 6.0 * orbPulse
+                const halo = ctx.createRadialGradient(x, y, 1, x, y, headRadius * 2.8)
+                halo.addColorStop(0, "#ffffff")
+                halo.addColorStop(0.24, color)
+                halo.addColorStop(0.62, Qt.rgba(color.r, color.g, color.b, 0.38))
+                halo.addColorStop(1, Qt.rgba(color.r, color.g, color.b, 0))
+                ctx.fillStyle = halo
                 ctx.beginPath()
-                ctx.arc(x, y, headRadius, 0, Math.PI * 2)
+                ctx.arc(x, y, headRadius * 2.8, 0, Math.PI * 2)
                 ctx.fill()
             }
             ctx.restore()
