@@ -129,9 +129,9 @@ WallpaperItem {
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
-            // Keep the orbit as one inexpensive continuous ellipse stroke.
-            // Local highlights are short arcs near each orb, not hundreds of
-            // individually stroked line segments on every frame.
+            // Draw the entire orbit as ONE closed path and ONE stroke.
+            // Individual segment strokes or separate arc pieces can leave
+            // visible seams, especially on multi-monitor boundaries.
             const orbCount = Math.max(1, Math.min(8, root.cfg_orbs))
             const orbAngles = []
             for (let i = 0; i < orbCount; ++i)
@@ -139,30 +139,45 @@ WallpaperItem {
 
             const trackWidth = 0.7 + root.cfg_beamWidth / 10.0
             const glowLevel = root.cfg_glow / 100.0
+            const segments = 720
             ctx.beginPath()
-            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
-            ctx.strokeStyle = Qt.rgba(glow.r * 0.24, glow.g * 0.24, glow.b * 0.24, 1)
+            for (let j = 0; j <= segments; ++j) {
+                const a = j / segments * Math.PI * 2
+                const x = rx * Math.cos(a)
+                const y = ry * Math.sin(a)
+                if (j === 0) ctx.moveTo(x, y)
+                else ctx.lineTo(x, y)
+            }
+            ctx.closePath()
+            ctx.strokeStyle = Qt.rgba(
+                glow.r * (0.28 + glowLevel * 0.12),
+                glow.g * (0.28 + glowLevel * 0.12),
+                glow.b * (0.28 + glowLevel * 0.12), 1)
             ctx.lineWidth = trackWidth
+            ctx.lineJoin = "round"
             ctx.lineCap = "round"
             ctx.stroke()
 
-            // Illuminate a small section of the track around each orb.
+            // Add short bright overlays at each orb without breaking the
+            // underlying closed track.
             for (let i = 0; i < orbAngles.length; ++i) {
                 const center = orbAngles[i]
-                const halfSpan = 0.48
+                const halfSpan = 0.42
                 ctx.beginPath()
-                for (let j = 0; j <= 20; ++j) {
-                    const a = center - halfSpan + (j / 20) * halfSpan * 2
+                for (let j = 0; j <= 32; ++j) {
+                    const a = center - halfSpan + (j / 32) * halfSpan * 2
                     const x = rx * Math.cos(a)
                     const y = ry * Math.sin(a)
                     if (j === 0) ctx.moveTo(x, y)
                     else ctx.lineTo(x, y)
                 }
                 ctx.strokeStyle = Qt.rgba(
-                    glow.r * (0.45 + glowLevel * 0.55),
-                    glow.g * (0.45 + glowLevel * 0.55),
-                    glow.b * (0.45 + glowLevel * 0.55), 1)
-                ctx.lineWidth = trackWidth * (1.15 + glowLevel * 0.35)
+                    glow.r * (0.55 + glowLevel * 0.45),
+                    glow.g * (0.55 + glowLevel * 0.45),
+                    glow.b * (0.55 + glowLevel * 0.45), 1)
+                ctx.lineWidth = trackWidth * (1.10 + glowLevel * 0.25)
+                ctx.lineCap = "round"
+                ctx.lineJoin = "round"
                 ctx.stroke()
             }
 
