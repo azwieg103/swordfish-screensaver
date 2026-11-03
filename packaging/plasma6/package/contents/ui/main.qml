@@ -114,13 +114,13 @@ WallpaperItem {
             ctx.translate(-root.screenX, -root.screenY)
             ctx.translate(cx, cy)
 
-            // Thick oval track with a soft, breathing green halo.
-            for (let layer = 3; layer >= 1; --layer) {
+            // Original delicate single-line orbit with a restrained soft halo.
+            for (let layer = 5; layer >= 1; --layer) {
                 ctx.beginPath()
                 ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
                 ctx.strokeStyle = Qt.rgba(glow.r, glow.g, glow.b,
-                                          (0.035 + pulse * 0.025) / layer)
-                ctx.lineWidth = root.cfg_beamWidth * (1.2 + layer * 0.85) * (0.9 + pulse * 0.12)
+                                          (0.025 + pulse * 0.018) / layer)
+                ctx.lineWidth = 1.5 + layer * 0.8
                 ctx.stroke()
             }
             ctx.beginPath()
@@ -131,7 +131,7 @@ WallpaperItem {
             ringGradient.addColorStop(0.62, "#00d878")
             ringGradient.addColorStop(1, "#55ff18")
             ctx.strokeStyle = ringGradient
-            ctx.lineWidth = root.cfg_beamWidth * (0.62 + pulse * 0.12)
+            ctx.lineWidth = 1.6 + pulse * 0.5
             ctx.stroke()
 
             // Exactly two glowing comet-orbs travel in opposite directions.
@@ -158,12 +158,12 @@ WallpaperItem {
                     else ctx.lineTo(px, py)
                 }
                 ctx.strokeStyle = tail
-                ctx.lineWidth = root.cfg_beamWidth * (0.95 + pulse * 0.25)
+                ctx.lineWidth = 3.0 + pulse * 0.8
                 ctx.lineCap = "round"
                 ctx.stroke()
 
                 const orbPulse = 0.7 + 0.3 * Math.sin(t * 2.0 + i * 2.4)
-                const headRadius = root.cfg_beamWidth * (1.7 + pulse * 0.4) * orbPulse
+                const headRadius = (7.0 + pulse * 2.0) * orbPulse
                 const head = ctx.createRadialGradient(x, y, 1, x, y, headRadius)
                 head.addColorStop(0, "#ffffff")
                 head.addColorStop(0.24, color)
