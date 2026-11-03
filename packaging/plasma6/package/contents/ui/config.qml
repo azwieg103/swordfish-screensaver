@@ -3,7 +3,14 @@ import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+Item {
+    // KDE Plasma 6 Screen Locker injects these properties when opening
+    // the wallpaper configuration page.
+    property var configDialog
+    property var wallpaperConfiguration
+
+    Kirigami.FormLayout {
+        anchors.fill: parent
     property alias cfg_showClock: showClock.checked
     property alias cfg_showDate: showDate.checked
     property alias cfg_clock24Hour: clock24Hour.checked
@@ -47,5 +54,6 @@ Kirigami.FormLayout {
         Kirigami.FormData.label: i18n("Beam width")
         from: 5
         to: 60
+    }
     }
 }
