@@ -1,13 +1,14 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  cmake >= 3.20
 BuildRequires:  extra-cmake-modules
-BuildRequires:  kf6-plasma-devel
+BuildRequires:  libplasma-devel
+BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  gcc-c++
 BuildRequires:  git
 BuildRequires:  make
@@ -56,6 +57,7 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/contents/ui/org/zwiegnet/swordfish/geometry/swordfishgeometryplugin.so
 
 %changelog
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-4
-- Add a QScreen-backed helper for dynamic virtual desktop and per-screen geometry.
-- Recalculate display geometry automatically when monitor layouts change.
+* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-5
+- Use the Plasma CMake package exported by libplasma-devel.
+- Add libplasma-devel and kf6-kcoreaddons-devel build dependencies.
+- Keep RPM build dependencies aligned with AlmaLinux 10 packaging.
