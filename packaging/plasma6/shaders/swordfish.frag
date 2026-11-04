@@ -35,6 +35,9 @@ void main()
         rx = min(desktopSize.x, desktopSize.y) * 0.40 * scale;
         ry = rx;
     } else if (shape > 1.5 && shape < 2.5) {
+        // Wider oval: extend the horizontal radius so it spans more of
+        // the virtual desktop instead of appearing compressed in the center.
+        rx = desktopSize.x * 0.60 * scale;
         ry *= 0.62;
     } else if (shape > 2.5) {
         rx *= 0.62;
