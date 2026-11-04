@@ -85,9 +85,16 @@ void main()
 
     // All monitor instances derive identical direction and starting position
     // from the shared monotonic clock and the same orbit-cycle number.
-    float directionSeed = fract(sin(orbitCycle * 127.1 + 311.7) * 43758.5453);
-    float randomDirection = directionSeed < 0.5 ? -1.0 : 1.0;
-    float motionDirection = direction == 0.0 ? randomDirection : direction;
+    // Random mode chooses a starting direction, holds it for three
+    // complete fade/travel/blackout cycles, then reverses for three cycles.
+    // A new random starting direction is selected for each six-cycle pair.
+    float directionBlock = floor(orbitCycle / 3.0);
+    float directionPair = floor(directionBlock / 2.0);
+    float pairSeed = fract(sin(directionPair * 127.1 + 311.7) * 43758.5453);
+    float initialDirection = pairSeed < 0.5 ? -1.0 : 1.0;
+    float blockDirection = mod(directionBlock, 2.0) < 1.0
+                         ? initialDirection : -initialDirection;
+    float motionDirection = direction == 0.0 ? blockDirection : direction;
     float randomStart = fract(sin(orbitCycle * 269.5 + 183.3) * 24634.6345);
     float angleBase = motionDirection * (randomStart + motionPhase) * (2.0 * PI);
     vec3 effectTint = plasmaColor.rgb * animationAlpha;
