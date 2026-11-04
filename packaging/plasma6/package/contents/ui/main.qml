@@ -6,8 +6,8 @@ import org.zwiegnet.swordfish.geometry 1.0
 WallpaperItem {
     id: root
 
-    property bool cfg_showClock: true
-    property bool cfg_showDate: true
+    property bool cfg_showClock: false
+    property bool cfg_showDate: false
     property bool cfg_clock24Hour: true
     property string cfg_green: "classic"
     property int cfg_orbs: 2
@@ -18,36 +18,16 @@ WallpaperItem {
     property int cfg_glow: 70
     property int cfg_orbitSize: 100
 
-    // Read geometry from QScreen, not QML's per-screen Screen attached object.
-    // virtualGeometry is the bounding rectangle of all connected displays.
     property rect screenRect: Qt.rect(0, 0, width, height)
     property rect desktopRect: Qt.rect(0, 0, width, height)
     property real screenX: screenRect.x - desktopRect.x
     property real screenY: screenRect.y - desktopRect.y
     property real desktopWidth: Math.max(1, desktopRect.width)
     property real desktopHeight: Math.max(1, desktopRect.height)
-
-    function refreshDisplayGeometry() {
-        const nextScreen = DisplayGeometry.screenGeometry(root)
-        const nextDesktop = DisplayGeometry.virtualGeometry(root)
-        if (nextScreen.width > 0 && nextScreen.height > 0)
-            screenRect = nextScreen
-        if (nextDesktop.width > 0 && nextDesktop.height > 0)
-            desktopRect = nextDesktop
-        canvas.requestPaint()
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        onTriggered: root.refreshDisplayGeometry()
-    }
-
-    property real phase: Date.now() / 1000.0
     property date currentDate: new Date()
     property string dateLabel: Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
     property string timeLabel: Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
+
     property var palette: ({
         "classic": Qt.rgba(0.28, 1.0, 0.035, 1),
         "lime": Qt.rgba(0.62, 1.0, 0.015, 1),
@@ -60,18 +40,13 @@ WallpaperItem {
     })
     property color plasmaColor: palette[cfg_green] || palette.classic
 
-    // Let Qt schedule updates with scene composition instead of a fixed timer.
-    function animateFrame() {
-        root.phase = Date.now() / 1000.0
-        canvas.requestPaint()
-        canvas.requestAnimationFrame(animateFrame)
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        onTriggered: root.updateClock()
+    function refreshDisplayGeometry() {
+        const nextScreen = DisplayGeometry.screenGeometry(root)
+        const nextDesktop = DisplayGeometry.virtualGeometry(root)
+        if (nextScreen.width > 0 && nextScreen.height > 0)
+            screenRect = nextScreen
+        if (nextDesktop.width > 0 && nextDesktop.height > 0)
+            desktopRect = nextDesktop
     }
 
     function updateClock() {
@@ -80,102 +55,41 @@ WallpaperItem {
         timeLabel = Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
     }
 
-    Component.onCompleted: { updateClock(); refreshDisplayGeometry(); canvas.requestAnimationFrame(animateFrame) }
-
-    Canvas {
-        id: canvas
-        anchors.fill: parent
-        renderStrategy: Canvas.Cooperative
-
-        onPaint: {
-            const ctx = getContext("2d")
-            const w = width
-            const h = height
-            const virtualWidth = root.desktopWidth
-            const virtualHeight = root.desktopHeight
-            const cx = virtualWidth / 2
-            const cy = virtualHeight / 2
-            // One wide oval spans the virtual desktop and crosses all displays.
-            const scale = root.cfg_orbitSize / 100.0
-            let rx = virtualWidth * 0.43 * scale
-            let ry = virtualHeight * 0.36 * scale
-            if (root.cfg_shape === "circle") {
-                rx = Math.min(virtualWidth, virtualHeight) * 0.40 * scale
-                ry = rx
-            } else if (root.cfg_shape === "wide") {
-                ry *= 0.62
-            } else if (root.cfg_shape === "tall") {
-                rx *= 0.62
-            }
-            const t = root.phase * root.cfg_speed / 10.0
-            const direction = root.cfg_direction === "counterclockwise" ? -1 : 1
-            const angle = direction * t * Math.PI * 2 / 18.0
-            const glow = root.plasmaColor
-
-            ctx.reset()
-            ctx.fillStyle = "#010207"
-            ctx.fillRect(0, 0, w, h)
-            ctx.save()
-
-            // Draw in virtual-desktop coordinates so the single orbit is continuous
-            // across all four monitors, including mixed/negative screen origins.
-            ctx.translate(-root.screenX, -root.screenY)
-            ctx.translate(cx, cy)
-
-            // Draw the entire orbit as ONE closed path and ONE stroke.
-            // Individual segment strokes or separate arc pieces can leave
-            // visible seams, especially on multi-monitor boundaries.
-            const orbCount = Math.max(1, Math.min(8, root.cfg_orbs))
-            const orbAngles = []
-            for (let i = 0; i < orbCount; ++i)
-                orbAngles.push(angle + i * Math.PI * 2 / orbCount)
-
-            const trackWidth = 0.7 + root.cfg_beamWidth / 10.0
-            const glowLevel = root.cfg_glow / 100.0
-            ctx.beginPath()
-            // Build the closed oval with explicit line segments. Qt's Canvas
-            // threaded renderer does not consistently render ellipse() paths
-            // on every Plasma/Qt build; this keeps the connecting track visible.
-            const trackSegments = 180
-            for (let segment = 0; segment <= trackSegments; ++segment) {
-                const a = segment * Math.PI * 2 / trackSegments
-                const px = rx * Math.cos(a)
-                const py = ry * Math.sin(a)
-                if (segment === 0)
-                    ctx.moveTo(px, py)
-                else
-                    ctx.lineTo(px, py)
-            }
-            ctx.closePath()
-            ctx.strokeStyle = Qt.rgba(
-                glow.r * (0.28 + glowLevel * 0.12),
-                glow.g * (0.28 + glowLevel * 0.12),
-                glow.b * (0.28 + glowLevel * 0.12), 1)
-            ctx.lineWidth = trackWidth
-            ctx.lineJoin = "round"
-            ctx.lineCap = "round"
-            ctx.stroke()
-
-            // Draw the moving heads. Their spacing and direction follow the
-            // same phase, so they never pause when a paint event is delayed.
-            for (let i = 0; i < orbAngles.length; ++i) {
-                const a = orbAngles[i]
-                const x = rx * Math.cos(a)
-                const y = ry * Math.sin(a)
-                const orbPulse = 0.90 + 0.10 * Math.sin(t * 2.0 + i * 2.4)
-                const headRadius = (3.0 + root.cfg_beamWidth * 0.22) * orbPulse
-                const halo = ctx.createRadialGradient(x, y, 1, x, y, headRadius * 2.8)
-                halo.addColorStop(0, "#ffffff")
-                halo.addColorStop(0.24, glow)
-                halo.addColorStop(0.62, Qt.rgba(glow.r, glow.g, glow.b, 0.38))
-                halo.addColorStop(1, Qt.rgba(glow.r, glow.g, glow.b, 0))
-                ctx.fillStyle = halo
-                ctx.beginPath()
-                ctx.arc(x, y, headRadius * 2.8, 0, Math.PI * 2)
-                ctx.fill()
-            }
-            ctx.restore()
+    Timer {
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: {
+            root.refreshDisplayGeometry()
+            if (root.cfg_showClock || root.cfg_showDate)
+                root.updateClock()
         }
+    }
+
+    // FrameAnimation is synchronized to Qt Quick's scene-graph frame delivery.
+    // All wallpaper instances read the same monotonic clock from the native plugin.
+    FrameAnimation {
+        running: true
+        onTriggered: shader.phase = DisplayGeometry.elapsedSeconds() * root.cfg_speed / 10.0
+    }
+
+    ShaderEffect {
+        id: shader
+        anchors.fill: parent
+        property real phase: DisplayGeometry.elapsedSeconds() * root.cfg_speed / 10.0
+        property vector2d desktopSize: Qt.vector2d(root.desktopWidth, root.desktopHeight)
+        property vector2d screenOrigin: Qt.vector2d(root.screenX, root.screenY)
+        property vector2d screenSize: Qt.vector2d(root.width, root.height)
+        property color plasmaColor: root.plasmaColor
+        property real orbitSize: root.cfg_orbitSize / 100.0
+        property real beamWidth: root.cfg_beamWidth
+        property real glow: root.cfg_glow / 100.0
+        property real orbCount: Math.max(1, Math.min(8, root.cfg_orbs))
+        property real shape: root.cfg_shape === "circle" ? 1.0 :
+                             root.cfg_shape === "wide" ? 2.0 :
+                             root.cfg_shape === "tall" ? 3.0 : 0.0
+        property real direction: root.cfg_direction === "counterclockwise" ? -1.0 : 1.0
+        fragmentShader: "qrc:/org/zwiegnet/swordfish/shaders/swordfish.frag.qsb"
     }
 
     Item {
