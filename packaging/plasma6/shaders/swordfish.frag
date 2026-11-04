@@ -18,6 +18,8 @@ layout(std140, binding = 0) uniform buf {
     float orbCount;
     float trailLength;
     float pulseInterval;
+    float pulseIntensity;
+    float pulseEnabled;
     float speedScale;
     float shape;
     float direction;
@@ -68,15 +70,16 @@ void main()
                             : direction;
     float angleBase = motionDirection * (legPhase / legUnits) * (4.0 * 2.0 * PI) * speedScale;
     float pulsePhase = max(0.0, cyclePhase - travelUnits);
-    float pulse = pulseStage
+    float pulse = pulseStage && pulseEnabled > 0.5
                   ? exp(-pow((pulsePhase - 0.58) / 0.25, 2.0))
                   : 0.0;
-    float pulseBoost = 1.0 + pulse * 3.2;
+    float intensity = clamp(pulseIntensity, 0.0, 2.0);
+    float pulseBoost = 1.0 + pulse * intensity * 3.2;
     // The continuous orbit brightens and blooms outward during the pulse.
-    float radiatingLineWidth = lineWidth + pulse * 7.0;
+    float radiatingLineWidth = lineWidth + pulse * intensity * 7.0;
     line = 1.0 - smoothstep(radiatingLineWidth, radiatingLineWidth + 2.0, orbitDistance);
-    color += plasmaColor.rgb * line * (0.20 + glow * 0.16) * (1.0 + pulse * 4.0);
-    float headRadius = 8.0 + beamWidth * 0.35 + pulse * 12.0;
+    color += plasmaColor.rgb * line * (0.20 + glow * 0.16) * (1.0 + pulse * intensity * 4.0);
+    float headRadius = 8.0 + beamWidth * 0.35 + pulse * intensity * 12.0;
     float pixelAngle = atan(q.y / max(ry, 1.0), q.x / max(rx, 1.0));
 
     // Trail length is an arc along the orbit, not a straight tangent.
@@ -113,7 +116,7 @@ void main()
         float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.48));
         color += plasmaColor.rgb * halo * (0.45 + glow * 0.75)
                  * pulseBoost * orbBrightness;
-        color += plasmaColor.rgb * core * (1.35 + pulse * 1.4) * orbBrightness;
+        color += plasmaColor.rgb * core * (1.35 + pulse * intensity * 1.4) * orbBrightness;
     }
 
     fragColor = vec4(color, 1.0) * qt_Opacity;
