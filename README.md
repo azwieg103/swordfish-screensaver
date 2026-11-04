@@ -78,9 +78,9 @@ sh scripts/build-solaris11.sh
 
 The script configures, builds, runs the animation-engine tests and CLI smoke test, and creates `dist/swordfish-solaris11-*.tar.gz`. Solaris 11.4 is not yet verified on a real machine. The manual GitHub Actions workflow requires a self-hosted runner labelled `self-hosted`, `solaris`, and `11`; enable the repository variable `SOLARIS11_RUNNER_ENABLED=true` after configuring that runner.
 
-## KDE Plasma 6 wallpaper integration
+## KDE Plasma 6 Screen Locking integration
 
-The RPM installs a native Plasma 6 wallpaper package named **Swordfish Plasma**. Select it from the desktop wallpaper chooser; it can also be selected as the wallpaper in KScreenLocker. Plasma creates a wallpaper instance for each display, and each instance uses the same epoch-based animation timeline, so the effect stays phase-synchronized on multi-monitor desktops (including four-display layouts). The date and clock appear in the bottom-right corner of each display by default.
+The RPM installs the Plasma package **Swordfish Plasma** for use as the Screen Locking background. This project is being developed and tested for **System Settings → Screen Locking**; desktop wallpaper configuration is not a supported project workflow. Plasma creates a wallpaper instance for each display, and each instance uses the same epoch-based animation timeline, so the effect stays phase-synchronized on multi-monitor desktops (including four-display layouts). The date and clock appear in the bottom-right corner of each display by default.
 
 The wallpaper settings include the green palette, orb count, beam width, date/time visibility, and 12/24-hour clock format. The date is shown above the time. Keep Plasma's normal screen-locking and authentication enabled; Swordfish supplies the lock-screen background, not the security mechanism.
 
@@ -91,7 +91,7 @@ kquitapp6 plasmashell
 plasmashell --replace
 ```
 
-Then open **System Settings → Wallpaper** (or right-click the desktop and choose **Configure Desktop and Wallpaper**) and select **Swordfish Plasma**. In **System Settings → Screen Locking**, select the Swordfish wallpaper if your KScreenLocker configuration exposes the wallpaper chooser.
+Open **System Settings → Screen Locking** and select **Swordfish Plasma** as the lock-screen background. Keep normal screen locking and authentication enabled.
 
 ## KDE and GNOME idle launch
 
