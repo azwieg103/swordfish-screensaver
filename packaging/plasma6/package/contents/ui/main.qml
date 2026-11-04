@@ -12,7 +12,7 @@ WallpaperItem {
     property string cfg_green: "classic"
     property int cfg_orbs: 3
     property int cfg_beamWidth: 14
-    property int cfg_speed: 10
+    property int cfg_speed: 20
     property string cfg_shape: "oval"
     property string cfg_direction: "clockwise"
     property int cfg_glow: 70
@@ -61,12 +61,12 @@ WallpaperItem {
     property color plasmaColor: palette[cfg_green] || palette.classic
 
     Timer {
-        interval: 33
+        interval: 16
         repeat: true
         running: true
         onTriggered: {
-            // Derive animation position from wall-clock elapsed time. A delayed
-            // frame skips ahead naturally instead of accumulating timer drift.
+            // Target 60 updates per second; phase remains time-based so a delayed
+            // frame never causes the animation to pause or accumulate drift.
             root.phase = Date.now() / 1000.0
             canvas.requestPaint()
         }
@@ -139,16 +139,8 @@ WallpaperItem {
 
             const trackWidth = 0.7 + root.cfg_beamWidth / 10.0
             const glowLevel = root.cfg_glow / 100.0
-            const segments = 720
             ctx.beginPath()
-            for (let j = 0; j <= segments; ++j) {
-                const a = j / segments * Math.PI * 2
-                const x = rx * Math.cos(a)
-                const y = ry * Math.sin(a)
-                if (j === 0) ctx.moveTo(x, y)
-                else ctx.lineTo(x, y)
-            }
-            ctx.closePath()
+            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
             ctx.strokeStyle = Qt.rgba(
                 glow.r * (0.28 + glowLevel * 0.12),
                 glow.g * (0.28 + glowLevel * 0.12),
@@ -164,13 +156,7 @@ WallpaperItem {
                 const center = orbAngles[i]
                 const halfSpan = 0.42
                 ctx.beginPath()
-                for (let j = 0; j <= 32; ++j) {
-                    const a = center - halfSpan + (j / 32) * halfSpan * 2
-                    const x = rx * Math.cos(a)
-                    const y = ry * Math.sin(a)
-                    if (j === 0) ctx.moveTo(x, y)
-                    else ctx.lineTo(x, y)
-                }
+                ctx.ellipse(0, 0, rx, ry, 0, center - halfSpan, center + halfSpan)
                 ctx.strokeStyle = Qt.rgba(
                     glow.r * (0.55 + glowLevel * 0.45),
                     glow.g * (0.55 + glowLevel * 0.45),
