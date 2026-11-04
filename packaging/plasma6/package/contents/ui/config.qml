@@ -23,6 +23,7 @@ Item {
     property alias cfg_orbBrightness: orbBrightness.value
     property alias cfg_orbitSize: orbitSize.value
     property alias cfg_trailLength: trailLength.value
+    property alias cfg_flameIntensity: flameIntensity.value
 
     implicitWidth: form.implicitWidth
     implicitHeight: form.implicitHeight
@@ -129,6 +130,11 @@ Item {
             Kirigami.FormData.label: i18n("Trail length")
             Controls.Slider { id: trailLength; from: 5; to: 100; stepSize: 5; Layout.fillWidth: true }
             Controls.Label { text: trailLength.value + "%" }
+        }
+        RowLayout {
+            Kirigami.FormData.label: i18n("Flame intensity")
+            Controls.Slider { id: flameIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
+            Controls.Label { text: flameIntensity.value + "%" }
         }
         Controls.SpinBox {
             id: beamWidth
