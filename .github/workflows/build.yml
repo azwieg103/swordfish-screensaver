@@ -297,6 +297,9 @@ jobs:
             runuser -u builder -- rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
           '
+          for rpm in "$RUNNER_TEMP"/rpms/*.rpm; do
+            mv "$rpm" "${rpm%.rpm}-${{ matrix.name }}.rpm"
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: swordfish-rpm-${{ matrix.name }}
@@ -318,7 +321,7 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            release-assets/swordfish-linux
+            release-assets/swordfish-screensaver
             release-assets/swordfish-kali-rolling-amd64.deb
             release-assets/swordfish-Ubuntu-*.deb
             release-assets/swordfish-Debian-*.deb
