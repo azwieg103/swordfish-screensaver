@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        21%{?dist}
+Release:        22%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -14,6 +14,7 @@ BuildRequires:  git
 BuildRequires:  make
 BuildRequires:  qt6-qtbase-devel
 BuildRequires:  qt6-qtdeclarative-devel
+BuildRequires:  qt6-qtshadertools-devel
 BuildRequires:  mesa-libGL-devel
 BuildRequires:  libX11-devel
 BuildRequires:  libXext-devel
@@ -26,8 +27,9 @@ BuildRequires:  libXinerama-devel
 
 %description
 An independent SDL2/OpenGL multi-monitor plasma animation with an optional
-desktop idle launcher. GNOME Mutter or X11 idle detection is used where
-available. The desktop environment remains responsible for secure locking.
+desktop idle launcher. The KDE Plasma 6 wallpaper uses a GPU fragment shader
+with a shared monotonic animation clock. The desktop environment remains
+responsible for secure locking.
 
 %prep
 %autosetup
@@ -39,7 +41,6 @@ available. The desktop environment remains responsible for secure locking.
 %install
 %cmake_install
 
-# Install the KDE Plasma 6 wallpaper package
 mkdir -p %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish
 cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.zwiegnet.swordfish/
 
@@ -57,70 +58,15 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-22
+- Replace the animated Canvas with a GPU fragment-shader renderer for Plasma 6.
+- Compile the shader to Qt QShader format during the CMake build.
+- Drive all monitor instances from one shared native monotonic animation clock.
+- Use Qt Quick frame-synchronized FrameAnimation for presentation updates.
+- Make date and time overlays optional and disabled by default.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-21
 - Drive animation updates with Qt requestAnimationFrame to align with scene composition.
 - Use cooperative Canvas rendering and reduce per-frame orbit path complexity.
 - Remove solid arc overlays that created persistent trails around the moving orbs.
 - Keep two default orbs moving over the continuously visible thin orbit.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-20
-- Restore the full oval track using explicit Canvas line paths compatible with Qt threaded rendering.
-- Restore continuous bright track segments around each moving orb.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-19
-- Target 60 FPS and use native ellipse paths instead of rebuilding 720-point paths per frame.
-- Increase the default animation speed to 2.0x.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-18
-- Preserve a single closed, connected orbit path and draw orb highlights over it.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-17
-- Restore the expected Item root for Plasma-injected wallpaper configuration properties.
-- Nest Kirigami.FormLayout beneath the configuration root.
-- Replace per-segment orbit rendering with a continuous ellipse and compact moving highlights.
-- Derive animation phase from elapsed time to avoid timer drift after delayed frames.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-16
-- Make Kirigami.FormLayout the configuration root expected by Plasma Screen Locker.
-- Expose injected configDialog and wallpaperConfiguration properties on the root object.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-15
-- Add KDE wallpaper controls for palette, orb count, speed, shape, direction, glow, orbit size, and beam width.
-- Apply configuration values directly to the multi-monitor animation.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-14
-- Make both plasma orbs travel in the same direction, opposite sides of the oval.
-- Expose animation speed as a visible System Settings slider from 0.1x to 3.0x.
-- Remove the unused orb-count setting; the animation uses exactly two orbs.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-13
-- Keep the full thin oval continuously visible across the virtual desktop.
-- Brighten the track around two opposing moving plasma orbs instead of fading comet tails.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-12
-- Restore the original thin orbit line and slim comet trails.
-- Retain the wide oval, two opposing orbs, green glow, and speed setting.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-11
-- Reduce default comet and oval track thickness for a cleaner, lighter trail.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-10
-- Change the continuous orbit from circular to wide oval geometry.
-- Use exactly two glowing comet orbs traveling in opposite directions.
-- Add configurable animation speed from 0.1x to 3.0x.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-9
-- Restore one continuous circular orbit spanning the virtual desktop.
-- Use a single reversing comet, thicker pulsing ring, and multiple glowing green orbs.
-- Add varied green shades while keeping the animation synchronized across displays.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-8
-- Explicitly set the QML plugin library prefix to lib for Linux builds.
-- Restore the standard lib prefix required by Qt QML plugin loading.
-- Install the geometry QML module in Qt's standard import directory for the lock screen.
-- Expose the wallpaper configuration properties expected by the Screen Locker KCM.
-
-* Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-5
-- Use the Plasma CMake package exported by libplasma-devel.
-- Add libplasma-devel and kf6-kcoreaddons-devel build dependencies.
-- Keep RPM build dependencies aligned with AlmaLinux 10 packaging.
