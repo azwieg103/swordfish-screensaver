@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake g++ git libgl-dev libx11-dev libxext-dev libxrandr-dev libxrender-dev libxfixes-dev libxi-dev libxcursor-dev libxinerama-dev
-      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSWORDFISH_BUILD_PLASMA6=OFF -DSWORDFISH_BUILD_PLASMA6=OFF
       - run: cmake --build build --parallel
       - run: ctest --test-dir build --output-on-failure
       - run: ./build/swordfish-screensaver --help
@@ -65,6 +65,107 @@ jobs:
         with:
           name: swordfish-kali-rolling-deb
           path: swordfish-kali-rolling-amd64.deb
+
+  debian-ubuntu:
+    name: DEB package (${{ matrix.os }} ${{ matrix.version }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: Ubuntu, version: "22.04", image: ubuntu:22.04 }
+          - { os: Ubuntu, version: "24.04", image: ubuntu:24.04 }
+          - { os: Ubuntu, version: "26.04", image: ubuntu:26.04 }
+          - { os: Debian, version: "12", image: debian:12 }
+          - { os: Debian, version: "13", image: debian:13 }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and package DEB
+        env:
+          IMAGE: ${{ matrix.image }}
+          DISTRO: ${{ matrix.os }}
+          DISTRO_VERSION: ${{ matrix.version }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/debs"
+          docker run --rm -e DISTRO -e DISTRO_VERSION -v "$PWD:/src:ro" -v "$RUNNER_TEMP/debs:/out" "$IMAGE" bash -euxc '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential cmake git dpkg-dev libsdl2-dev libgl-dev libx11-dev libxext-dev libxrandr-dev libxrender-dev libxfixes-dev libxi-dev libxcursor-dev libxinerama-dev
+            cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release -DSWORDFISH_BUILD_PLASMA6=OFF
+            cmake --build /tmp/build --parallel 2
+            ctest --test-dir /tmp/build --output-on-failure
+            /tmp/build/swordfish-screensaver --help
+            arch="$(dpkg --print-architecture)"
+            pkg="swordfish-screensaver_0.2.1_${arch}"
+            mkdir -p "/tmp/pkg/$pkg/DEBIAN" "/tmp/pkg/$pkg/usr/bin" "/tmp/pkg/$pkg/usr/share/doc/swordfish-screensaver" "/tmp/pkg/$pkg/usr/share/licenses/swordfish-screensaver"
+            install -m 0755 /tmp/build/swordfish-screensaver "/tmp/pkg/$pkg/usr/bin/"
+            install -m 0644 /src/README.md "/tmp/pkg/$pkg/usr/share/doc/swordfish-screensaver/"
+            install -m 0644 /src/LICENSE "/tmp/pkg/$pkg/usr/share/licenses/swordfish-screensaver/copyright"
+            cat > "/tmp/pkg/$pkg/DEBIAN/control" <<CONTROL
+Package: swordfish-screensaver
+Version: 0.2.1
+Section: x11
+Priority: optional
+Architecture: $arch
+Depends: libsdl2-2.0-0, libgl1, libx11-6, libxext6, libxrandr2, libxrender1, libxfixes3, libxi6, libxcursor1, libxinerama1
+Maintainer: Zwiegnet
+Description: Multi-display procedural Swordfish screensaver
+ Animated multi-monitor screensaver built with SDL2 and OpenGL.
+CONTROL
+            dpkg-deb --root-owner-group --build "/tmp/pkg/$pkg" "/out/swordfish-$DISTRO-$DISTRO_VERSION-$arch.deb"
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swordfish-${{ matrix.os }}-${{ matrix.version }}-deb
+          path: ${{ runner.temp }}/debs/*.deb
+
+  fedora:
+    name: Fedora ${{ matrix.version }} build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["43", "44"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test in Fedora
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/out:/out" "fedora:${{ matrix.version }}" bash -euxc '
+            dnf install -y cmake gcc-c++ git make SDL2-devel mesa-libGL-devel libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel
+            cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release -DSWORDFISH_BUILD_PLASMA6=OFF
+            cmake --build /tmp/build --parallel 2
+            ctest --test-dir /tmp/build --output-on-failure
+            /tmp/build/swordfish-screensaver --help
+            install -m 0755 /tmp/build/swordfish-screensaver /out/
+            tar -czf "/out/swordfish-fedora-${{ matrix.version }}-x86_64.tar.gz" -C /out swordfish-screensaver
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swordfish-fedora-${{ matrix.version }}
+          path: ${{ runner.temp }}/out/swordfish-fedora-*.tar.gz
+
+  arch:
+    name: Arch Linux build
+    runs-on: ubuntu-24.04
+    container:
+      image: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: |
+          pacman -Syu --noconfirm --needed base-devel cmake git sdl2 mesa libx11 libxext libxrandr libxrender libxfixes libxi libxcursor libxinerama
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSWORDFISH_BUILD_PLASMA6=OFF
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+          ./build/swordfish-screensaver --help
+          mkdir -p dist
+          install -m 0755 build/swordfish-screensaver dist/
+          tar -czf swordfish-archlinux-x86_64.tar.gz -C dist swordfish-screensaver
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swordfish-archlinux
+          path: swordfish-archlinux-x86_64.tar.gz
 
   freebsd:
     name: FreeBSD ${{ matrix.release }} x86_64
@@ -198,7 +299,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, kali, freebsd, macos, windows, rpm]
+    needs: [linux, kali, debian-ubuntu, fedora, arch, freebsd, macos, windows, rpm]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -214,6 +315,10 @@ jobs:
           files: |
             release-assets/swordfish-linux
             release-assets/swordfish-kali-rolling-amd64.deb
+            release-assets/swordfish-Ubuntu-*.deb
+            release-assets/swordfish-Debian-*.deb
+            release-assets/swordfish-fedora-*.tar.gz
+            release-assets/swordfish-archlinux-x86_64.tar.gz
             release-assets/swordfish-windows-x64.zip
             release-assets/swordfish-macos-*.zip
             release-assets/swordfish-freebsd-14.3-amd64.tar.gz
