@@ -22,6 +22,7 @@ WallpaperItem {
     readonly property int orbitSize: configuration.orbitSize
     readonly property int trailLength: configuration.trailLength
     readonly property int flameIntensity: configuration.flameIntensity
+    readonly property int blankDuration: configuration.blankDuration
 
     property rect screenRect: Qt.rect(0, 0, width, height)
     property rect desktopRect: Qt.rect(0, 0, width, height)
@@ -93,6 +94,7 @@ WallpaperItem {
         property real orbCount: Math.max(1, Math.min(8, root.orbs))
         property real trailLength: root.trailLength
         property real flameIntensity: root.flameIntensity
+        property real blankDuration: root.blankDuration
         property real speedScale: root.speed / 20.0
         property real shape: root.shape === "circle" ? 1.0 :
                              root.shape === "wide" ? 2.0 :
