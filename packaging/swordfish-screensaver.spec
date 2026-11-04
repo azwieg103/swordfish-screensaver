@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        42%{?dist}
+Release:        43%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,11 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-43
+- Make Screen Locking wallpaper settings scrollable to expose all controls.
+- Extend fade transitions to seven seconds and default blackout duration to seven seconds.
+- Resume orbital movement during fade-in, revealing the orb before the orbit ring.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-42
 - Use a plain string model for travel direction in the Screen Locking configuration UI.
 - Keep Random, Clockwise, and Counterclockwise explicitly selectable.
