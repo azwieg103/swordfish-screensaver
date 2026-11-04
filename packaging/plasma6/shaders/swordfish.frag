@@ -80,29 +80,31 @@ void main()
         vec2 head = center + vec2(rx * cos(angle), ry * sin(angle));
         float d = length(p - head);
 
-        // A smooth spherical glow surrounds the moving orb; the pulse happens
-        // only after the forward and reverse passes have completed.
-        // A tapered arc follows the orbit behind the moving head.
-        // The thin base orbit remains visible underneath the comet tail.
-        float trailAngle = mod(motionDirection * (angle - pixelAngle) + 2.0 * PI,
-                               2.0 * PI);
-        float trailProgress = clamp(trailAngle / tailLength, 0.0, 1.0);
-        float trailFade = pow(max(0.0, 1.0 - trailProgress), 1.45);
-        float trailActive = 1.0 - smoothstep(tailLength * 0.88,
-                                             tailLength, trailAngle);
-        float taper = mix(0.12, 1.0, exp(-trailProgress * 2.0));
-        float tailCoreWidth = (1.0 + beamWidth * 0.075) * taper;
-        float tailGlowWidth = (headRadius * (1.7 + glow * 1.8)) * taper;
-        float tailCore = exp(-pow(orbitDistance / max(0.8, tailCoreWidth), 2.0));
-        float tailGlow = exp(-orbitDistance / max(1.0, tailGlowWidth * 2.5));
+        // Build the comet tail in the orb's local tangent frame. This creates
+        // a rounded, tapered plume rather than an angular wedge around the orbit.
+        vec2 tangent = normalize(vec2(-rx * sin(angle), ry * cos(angle)))
+                       * motionDirection;
+        vec2 relative = p - head;
+        float along = dot(relative, tangent);
+        float across = abs(relative.x * tangent.y - relative.y * tangent.x);
+        float tailLengthPx = max(42.0, min(rx, ry) * 0.105);
+        float tailProgress = clamp(-along / tailLengthPx, 0.0, 1.0);
+        float tailActive = smoothstep(1.5, -2.0, along)
+                           * (1.0 - smoothstep(-tailLengthPx, -tailLengthPx - 3.0, along));
+        float taper = mix(0.8, 0.035, pow(tailProgress, 0.82));
+        float tailWidth = max(1.0, (headRadius * (1.15 + glow * 1.35)) * taper);
+        float tailCore = exp(-pow(across / max(0.8, tailWidth * 0.42), 2.0));
+        float tailHalo = exp(-pow(across / max(1.0, tailWidth * 2.3), 2.0));
+        float tailFade = pow(max(0.0, 1.0 - tailProgress), 1.15);
 
-        color += plasmaColor.rgb * tailGlow * trailFade * trailActive
-                 * (0.75 + glow * 0.9) * pulseBoost;
-        color += mix(plasmaColor.rgb, vec3(0.72, 0.96, 1.0), 0.28)
-                 * tailCore * trailFade * trailActive * (1.25 + pulse * 1.9);
+        color += plasmaColor.rgb * tailHalo * tailFade * tailActive
+                 * (0.65 + glow * 0.85) * pulseBoost;
+        color += mix(plasmaColor.rgb, vec3(0.72, 0.96, 1.0), 0.22)
+                 * tailCore * tailFade * tailActive * (1.1 + pulse * 1.7);
 
-        float halo = exp(-d / max(1.0, headRadius * (2.0 + glow * 1.8)));
-        float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.55));
+        // Concentric radial falloff keeps the orb itself perfectly round.
+        float halo = exp(-pow(d / max(1.0, headRadius * (2.0 + glow * 1.8)), 2.0));
+        float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.48));
         color += plasmaColor.rgb * halo * (0.45 + glow * 0.75)
                  * pulseBoost * orbBrightness;
         color += vec3(0.78, 0.96, 1.0) * core
