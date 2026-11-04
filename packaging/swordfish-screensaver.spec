@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        35%{?dist}
+Release:        36%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,11 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-36
+- Animate one full orbit per cycle, then hide the entire animation for five seconds.
+- Retain configurable direction, speed, orb count, palette, glow, and comet trail.
+- Remove the previous radiating-pulse controls, which are replaced by the blank pause.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-35
 - Set Emerald as the default plasma palette for new configurations.
 
