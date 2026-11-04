@@ -53,24 +53,26 @@ void main()
     color += plasmaColor.rgb * line * (0.20 + glow * 0.16);
 
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
-    const float lapUnits = 18.0;
-    const float travelUnits = 4.0 * lapUnits;
     const float pulseUnits = 4.0;
-    const float cycleUnits = travelUnits * 2.0 + pulseUnits;
+    // pulseInterval is expressed in the shader's speed-scaled time units.
+    // Two equal travel legs are followed by a short radiating pulse.
+    float travelUnits = max(10.0, pulseInterval);
+    float legUnits = travelUnits * 0.5;
+    float cycleUnits = travelUnits + pulseUnits;
     float cyclePhase = mod(phase, cycleUnits);
-    float travelPhase = cyclePhase < travelUnits
-                        ? cyclePhase
-                        : cyclePhase < travelUnits * 2.0
-                          ? travelUnits * 2.0 - cyclePhase
-                          : 0.0;
-    float motionDirection = cyclePhase < travelUnits ? direction : -direction;
-    float angleBase = direction * travelPhase * (2.0 * PI / lapUnits);
-    float pulsePhase = max(0.0, cyclePhase - travelUnits * 2.0);
-    float pulse = cyclePhase >= travelUnits * 2.0
-                  ? exp(-pow((pulsePhase - 0.85) / 0.42, 2.0))
+    bool pulseStage = cyclePhase >= travelUnits;
+    float legPhase = mod(cyclePhase, legUnits);
+    float legIndex = cyclePhase < legUnits ? 0.0 : 1.0;
+    float motionDirection = direction == 0.0
+                            ? (legIndex < 0.5 ? 1.0 : -1.0)
+                            : direction;
+    float angleBase = motionDirection * (legPhase / legUnits) * (4.0 * 2.0 * PI);
+    float pulsePhase = max(0.0, cyclePhase - travelUnits);
+    float pulse = pulseStage
+                  ? exp(-pow((pulsePhase - 1.15) / 0.48, 2.0))
                   : 0.0;
-    float pulseBoost = 1.0 + pulse * 2.5;
-    float headRadius = 8.0 + beamWidth * 0.35;
+    float pulseBoost = 1.0 + pulse * 3.2;
+    float headRadius = 8.0 + beamWidth * 0.35 + pulse * 12.0;
     float pixelAngle = atan(q.y / max(ry, 1.0), q.x / max(rx, 1.0));
 
     // Trail length is an arc along the orbit, not a straight tangent.
