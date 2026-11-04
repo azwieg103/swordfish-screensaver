@@ -98,7 +98,7 @@ The artifact contains an amd64 `.deb` package:
 
 ```bash
 sudo apt update
-sudo apt install ./swordfish-Ubuntu-<version>-amd64.deb
+sudo apt install ./swordfish-Ubuntu-22.04-amd64.deb   # or 24.04 / 26.04
 ```
 
 If you install with `dpkg -i` instead, resolve any missing dependencies with:
@@ -113,7 +113,7 @@ The artifact contains an amd64 `.deb` package:
 
 ```bash
 sudo apt update
-sudo apt install ./swordfish-Debian-<version>-amd64.deb
+sudo apt install ./swordfish-Debian-12-amd64.deb      # or Debian 13
 ```
 
 ### Kali Rolling
@@ -168,7 +168,7 @@ Download the archive matching your FreeBSD release and architecture. Install the
 
 ```sh
 sudo pkg install sdl2 mesa-libs
-sudo tar -xzf swordfish-freebsd-<release>-amd64.tar.gz -C /
+sudo tar -xzf swordfish-freebsd-14.3-amd64.tar.gz -C /  # or FreeBSD 15.0
 ```
 
 ### macOS 26 — Apple Silicon and Intel
@@ -246,7 +246,7 @@ Available settings:
 | Blackout duration | 0–60 seconds |
 | Beam width | 5–60 |
 
-The settings are stored by Plasma for the lock-screen background. Other platform builds do not currently include this Plasma-specific configuration UI.
+The settings are stored by Plasma for the lock-screen background. Other platform builds do not currently include this Plasma-specific configuration UI.\n\nTo compile and install the Plasma integration from source on a system with the Plasma 6 development SDK installed, leave the option enabled (or set it explicitly):\n\n```bash\ncmake -S . -B build-plasma -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DSWORDFISH_BUILD_PLASMA6=ON\ncmake --build build-plasma --parallel\nsudo cmake --install build-plasma\n```
 
 ## Optional idle launcher on Linux
 
