@@ -49,14 +49,16 @@ void main()
     // One full revolution, a smooth fade-out, an adjustable blackout,
     // then a smooth fade-in before the next revolution.
     float travelUnits = 90.0 / max(1.0, speedScale * 20.0);
-    const float fadeUnits = 1.25;
+    const float fadeUnits = 7.0;
     float blankUnits = max(0.0, blankDuration);
     float cycleUnits = travelUnits + fadeUnits * 2.0 + blankUnits;
     float cycleNumber = floor(phase / cycleUnits);
     float cyclePhase = mod(phase, cycleUnits);
     float animationAlpha = 1.0;
+    float ringAlpha = 1.0;
     float motionPhase = 0.0;
     float orbitCycle = cycleNumber;
+    float fadeInProgress = 0.0;
 
     // Keep moving during the fade-out. The completed lap therefore does not
     // freeze at a monitor edge or reset to the same position after blackout.
@@ -74,9 +76,15 @@ void main()
         // next cycle's seed here so the position and direction match exactly
         // when the following visible revolution begins.
         orbitCycle = cycleNumber + 1.0;
-        motionPhase = 0.0;
-        animationAlpha = smoothstep(0.0, fadeUnits,
-            cyclePhase - travelUnits - fadeUnits - blankUnits);
+        fadeInProgress = clamp(
+            (cyclePhase - travelUnits - fadeUnits - blankUnits) / fadeUnits,
+            0.0, 1.0);
+        // Resume movement immediately at the randomized point. Do not hold
+        // the orb stationary while its brightness comes back.
+        motionPhase = fadeInProgress * (fadeUnits / travelUnits);
+        animationAlpha = smoothstep(0.0, 0.22, fadeInProgress);
+        // Reveal the orb first; bring the orbital ring up more gradually.
+        ringAlpha = smoothstep(0.28, 1.0, fadeInProgress);
     }
 
     // All monitor instances derive identical direction and starting position
@@ -87,13 +95,14 @@ void main()
     float randomStart = fract(sin(orbitCycle * 269.5 + 183.3) * 24634.6345);
     float angleBase = motionDirection * (randomStart + motionPhase) * (2.0 * PI);
     vec3 effectTint = plasmaColor.rgb * animationAlpha;
+    vec3 ringTint = plasmaColor.rgb * ringAlpha;
 
     vec2 q = p - center;
     float normalizedRadius = length(vec2(q.x / max(rx, 1.0), q.y / max(ry, 1.0)));
     float orbitDistance = abs(normalizedRadius - 1.0) * min(rx, ry);
     float lineWidth = 0.7 + beamWidth * 0.10;
     float line = 1.0 - smoothstep(lineWidth, lineWidth + 1.5, orbitDistance);
-    color += effectTint * line * (0.20 + glow * 0.16);
+    color += ringTint * line * (0.20 + glow * 0.16);
 
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
     float headRadius = 8.0 + beamWidth * 0.35;
