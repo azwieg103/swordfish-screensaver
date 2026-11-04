@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        47%{?dist}
+Release:        48%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,10 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-48
+- Replace Kirigami.FormLayout with a plain Qt Quick settings layout.
+- Avoid the Screen Locking KCM null-children error and expose all visual controls.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-47
 - Replace the travel-direction dropdown with always-visible Random, Clockwise, and Counterclockwise radio options.
 - Make the Random alternating mode explicit in the Screen Locking menu.
