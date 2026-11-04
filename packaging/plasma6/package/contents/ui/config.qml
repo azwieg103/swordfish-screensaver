@@ -27,11 +27,20 @@ Item {
     property alias cfg_blankDuration: blankDuration.value
 
     implicitWidth: form.implicitWidth
-    implicitHeight: form.implicitHeight
+    implicitHeight: Math.min(form.implicitHeight, 560)
 
-    Kirigami.FormLayout {
-        id: form
+    // The Screen Locking KCM gives wallpaper settings a limited viewport.
+    // Make the full form scrollable so lower controls are never clipped.
+    Controls.ScrollView {
+        id: settingsScroll
         anchors.fill: parent
+        clip: true
+        contentWidth: availableWidth
+        contentHeight: form.implicitHeight
+
+        Kirigami.FormLayout {
+            id: form
+            width: settingsScroll.availableWidth
 
         Controls.CheckBox {
             id: showClock
@@ -152,6 +161,7 @@ Item {
             Kirigami.FormData.label: i18n("Beam width")
             from: 5
             to: 60
+        }
         }
     }
 }
