@@ -68,6 +68,7 @@ void main()
         motionPhase = 1.0 + (cyclePhase - travelUnits) / travelUnits;
         animationAlpha = 1.0 - smoothstep(0.0, fadeUnits,
                                           cyclePhase - travelUnits);
+        ringAlpha = animationAlpha;
     } else if (cyclePhase < travelUnits + fadeUnits + blankUnits) {
         fragColor = vec4(color, 1.0) * qt_Opacity;
         return;
