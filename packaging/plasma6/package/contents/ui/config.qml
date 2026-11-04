@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
-import org.kde.kirigami as Kirigami
 
-// Plasma injects configDialog and wallpaperConfiguration into this root Item.
-// Keep the form layout nested so those properties exist on the expected object.
+// Plain Qt Quick layout for the Screen Locking KCM.
+// Avoid Kirigami.FormLayout: the KCM logs a null-children error while
+// constructing that layout, which prevents the complete settings form loading.
 Item {
     id: root
     property var configDialog
@@ -26,151 +26,158 @@ Item {
     property alias cfg_flameIntensity: flameIntensity.value
     property alias cfg_blankDuration: blankDuration.value
 
-    implicitWidth: form.implicitWidth
-    implicitHeight: Math.min(form.implicitHeight, 560)
+    implicitWidth: 640
+    implicitHeight: Math.min(settingsColumn.implicitHeight + 16, 560)
 
-    // The Screen Locking KCM gives wallpaper settings a limited viewport.
-    // Make the full form scrollable so lower controls are never clipped.
     Controls.ScrollView {
         id: settingsScroll
         anchors.fill: parent
         clip: true
         contentWidth: availableWidth
-        contentHeight: form.implicitHeight
+        contentHeight: settingsColumn.implicitHeight
 
-        Kirigami.FormLayout {
-            id: form
+        ColumnLayout {
+            id: settingsColumn
             width: settingsScroll.availableWidth
+            spacing: 10
 
-        Controls.CheckBox {
-            id: showClock
-            Kirigami.FormData.label: i18n("Clock")
-            text: i18n("Show time")
-        }
-        Controls.CheckBox {
-            id: showDate
-            text: i18n("Show date above time")
-        }
-        Controls.CheckBox {
-            id: clock24Hour
-            text: i18n("Use 24-hour time")
-        }
-        Controls.ComboBox {
-            id: green
-            Kirigami.FormData.label: i18n("Color theme")
-            textRole: "text"
-            valueRole: "value"
-            currentIndex: Math.max(0, indexOfValue(root.cfg_green))
-            onActivated: root.cfg_green = currentValue
-            model: [
-                { text: i18n("Classic"), value: "classic" },
-                { text: i18n("Lime"), value: "lime" },
-                { text: i18n("Emerald"), value: "emerald" },
-                { text: i18n("Teal"), value: "teal" },
-                { text: i18n("Ice blue"), value: "ice" },
-                { text: i18n("Amber"), value: "amber" },
-                { text: i18n("Violet"), value: "violet" },
-                { text: i18n("White"), value: "white" },
-                { text: i18n("Fireball (red/orange)"), value: "fireball" }
-            ]
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Animation speed")
-            Controls.Slider {
-                id: speed
-                from: 1
-                to: 30
-                stepSize: 1
+            Controls.CheckBox {
+                id: showClock
+                text: qsTr("Show time")
                 Layout.fillWidth: true
             }
-            Controls.Label {
-                text: (speed.value / 10).toFixed(1) + "x"
-                Layout.minimumWidth: Kirigami.Units.gridUnit * 3
-                horizontalAlignment: Text.AlignRight
+            Controls.CheckBox {
+                id: showDate
+                text: qsTr("Show date above time")
+                Layout.fillWidth: true
             }
-        }
-        Controls.ComboBox {
-            id: shape
-            Kirigami.FormData.label: i18n("Orbit shape")
-            textRole: "text"
-            valueRole: "value"
-            currentIndex: Math.max(0, indexOfValue(root.cfg_shape))
-            onActivated: root.cfg_shape = currentValue
-            model: [
-                { text: i18n("Oval"), value: "oval" },
-                { text: i18n("Circle"), value: "circle" },
-                { text: i18n("Wide oval"), value: "wide" },
-                { text: i18n("Tall oval"), value: "tall" }
-            ]
-        }
-        ColumnLayout {
-            Kirigami.FormData.label: i18n("Travel direction")
-            spacing: Kirigami.Units.smallSpacing
+            Controls.CheckBox {
+                id: clock24Hour
+                text: qsTr("Use 24-hour time")
+                Layout.fillWidth: true
+            }
 
-            Controls.ButtonGroup {
-                id: directionGroup
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Color theme"); Layout.preferredWidth: 190 }
+                Controls.ComboBox {
+                    id: green
+                    Layout.fillWidth: true
+                    textRole: "text"
+                    valueRole: "value"
+                    currentIndex: Math.max(0, indexOfValue(root.cfg_green))
+                    onActivated: root.cfg_green = currentValue
+                    model: [
+                        { text: qsTr("Classic"), value: "classic" },
+                        { text: qsTr("Lime"), value: "lime" },
+                        { text: qsTr("Emerald"), value: "emerald" },
+                        { text: qsTr("Teal"), value: "teal" },
+                        { text: qsTr("Ice blue"), value: "ice" },
+                        { text: qsTr("Amber"), value: "amber" },
+                        { text: qsTr("Violet"), value: "violet" },
+                        { text: qsTr("White"), value: "white" },
+                        { text: qsTr("Fireball (red/orange)"), value: "fireball" }
+                    ]
+                }
             }
-            Controls.RadioButton {
-                text: i18n("Random (alternate every three cycles)")
-                checked: root.cfg_direction === "random"
-                ButtonGroup.group: directionGroup
-                onToggled: if (checked) root.cfg_direction = "random"
+
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Animation speed"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: speed; from: 1; to: 30; stepSize: 1; Layout.fillWidth: true }
+                Controls.Label { text: (speed.value / 10).toFixed(1) + "x"; Layout.minimumWidth: 42 }
             }
-            Controls.RadioButton {
-                text: i18n("Clockwise")
-                checked: root.cfg_direction === "clockwise"
-                ButtonGroup.group: directionGroup
-                onToggled: if (checked) root.cfg_direction = "clockwise"
+
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Orbit shape"); Layout.preferredWidth: 190 }
+                Controls.ComboBox {
+                    id: shape
+                    Layout.fillWidth: true
+                    textRole: "text"
+                    valueRole: "value"
+                    currentIndex: Math.max(0, indexOfValue(root.cfg_shape))
+                    onActivated: root.cfg_shape = currentValue
+                    model: [
+                        { text: qsTr("Oval"), value: "oval" },
+                        { text: qsTr("Circle"), value: "circle" },
+                        { text: qsTr("Wide oval"), value: "wide" },
+                        { text: qsTr("Tall oval"), value: "tall" }
+                    ]
+                }
             }
-            Controls.RadioButton {
-                text: i18n("Counterclockwise")
-                checked: root.cfg_direction === "counterclockwise"
-                ButtonGroup.group: directionGroup
-                onToggled: if (checked) root.cfg_direction = "counterclockwise"
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                Controls.Label { text: qsTr("Travel direction") }
+                Controls.ButtonGroup { id: directionGroup }
+                Controls.RadioButton {
+                    text: qsTr("Random (alternate every three cycles)")
+                    checked: root.cfg_direction === "random"
+                    ButtonGroup.group: directionGroup
+                    onToggled: if (checked) root.cfg_direction = "random"
+                }
+                Controls.RadioButton {
+                    text: qsTr("Clockwise")
+                    checked: root.cfg_direction === "clockwise"
+                    ButtonGroup.group: directionGroup
+                    onToggled: if (checked) root.cfg_direction = "clockwise"
+                }
+                Controls.RadioButton {
+                    text: qsTr("Counterclockwise")
+                    checked: root.cfg_direction === "counterclockwise"
+                    ButtonGroup.group: directionGroup
+                    onToggled: if (checked) root.cfg_direction = "counterclockwise"
+                }
             }
-        }
-        Controls.SpinBox {
-            id: orbs
-            Kirigami.FormData.label: i18n("Number of orbs")
-            from: 1
-            to: 8
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Meteor flame intensity")
-            Controls.Slider { id: flameIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: flameIntensity.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Glow intensity")
-            Controls.Slider { id: glow; from: 10; to: 100; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: glow.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Orb brightness")
-            Controls.Slider { id: orbBrightness; from: 10; to: 200; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: orbBrightness.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Orbit size")
-            Controls.Slider { id: orbitSize; from: 50; to: 120; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: orbitSize.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Trail length")
-            Controls.Slider { id: trailLength; from: 5; to: 100; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: trailLength.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Blackout duration")
-            Controls.Slider { id: blankDuration; from: 0; to: 60; stepSize: 1; Layout.fillWidth: true }
-            Controls.Label { text: blankDuration.value + " sec" }
-        }
-        Controls.SpinBox {
-            id: beamWidth
-            Kirigami.FormData.label: i18n("Beam width")
-            from: 5
-            to: 60
-        }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Number of orbs"); Layout.preferredWidth: 190 }
+                Controls.SpinBox { id: orbs; from: 1; to: 8 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Meteor flame intensity"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: flameIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
+                Controls.Label { text: flameIntensity.value + "%"; Layout.minimumWidth: 42 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Glow intensity"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: glow; from: 10; to: 100; stepSize: 5; Layout.fillWidth: true }
+                Controls.Label { text: glow.value + "%"; Layout.minimumWidth: 42 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Orb brightness"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: orbBrightness; from: 10; to: 200; stepSize: 5; Layout.fillWidth: true }
+                Controls.Label { text: orbBrightness.value + "%"; Layout.minimumWidth: 42 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Orbit size"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: orbitSize; from: 50; to: 120; stepSize: 5; Layout.fillWidth: true }
+                Controls.Label { text: orbitSize.value + "%"; Layout.minimumWidth: 42 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Trail length"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: trailLength; from: 5; to: 100; stepSize: 5; Layout.fillWidth: true }
+                Controls.Label { text: trailLength.value + "%"; Layout.minimumWidth: 42 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Blackout duration"); Layout.preferredWidth: 190 }
+                Controls.Slider { id: blankDuration; from: 0; to: 60; stepSize: 1; Layout.fillWidth: true }
+                Controls.Label { text: blankDuration.value + " sec"; Layout.minimumWidth: 54 }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Controls.Label { text: qsTr("Beam width"); Layout.preferredWidth: 190 }
+                Controls.SpinBox { id: beamWidth; from: 5; to: 60 }
+            }
         }
     }
 }
