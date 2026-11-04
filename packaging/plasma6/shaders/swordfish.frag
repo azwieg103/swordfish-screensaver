@@ -46,46 +46,41 @@ void main()
 
     vec3 color = vec3(0.003, 0.006, 0.014);
 
-    // One full revolution, a smooth fade-out, an adjustable blackout,
-    // then a smooth fade-in before the next revolution.
+    // Each cycle starts with a moving fade-in, continues the same orbit,
+    // fades out at the end of the revolution, then remains fully black.
+    // Fade-in motion is part of the revolution, not an extra pre-roll. This
+    // keeps the angle and trail phase continuous at every phase boundary.
     float travelUnits = 90.0 / max(1.0, speedScale * 20.0);
     const float fadeUnits = 7.0;
     float blankUnits = max(0.0, blankDuration);
-    float cycleUnits = travelUnits + fadeUnits * 2.0 + blankUnits;
+    float cycleUnits = travelUnits + fadeUnits + blankUnits;
     float cycleNumber = floor(phase / cycleUnits);
     float cyclePhase = mod(phase, cycleUnits);
     float animationAlpha = 1.0;
     float ringAlpha = 1.0;
     float motionPhase = 0.0;
     float orbitCycle = cycleNumber;
-    float fadeInProgress = 0.0;
 
-    // Keep moving during the fade-out. The completed lap therefore does not
-    // freeze at a monitor edge or reset to the same position after blackout.
-    if (cyclePhase < travelUnits) {
+    if (cyclePhase < fadeUnits) {
+        // Begin at this orbit's random position and move immediately.
+        float fadeInProgress = clamp(cyclePhase / fadeUnits, 0.0, 1.0);
+        motionPhase = cyclePhase / travelUnits;
+        animationAlpha = smoothstep(0.0, 0.22, fadeInProgress);
+        // Reveal the orb first; bring the orbital ring up more gradually.
+        ringAlpha = smoothstep(0.28, 1.0, fadeInProgress);
+    } else if (cyclePhase < travelUnits) {
+        // Continue from precisely the position reached during fade-in.
         motionPhase = cyclePhase / travelUnits;
     } else if (cyclePhase < travelUnits + fadeUnits) {
+        // Complete the orbit smoothly while fading the orb, trail and ring.
         motionPhase = 1.0 + (cyclePhase - travelUnits) / travelUnits;
         animationAlpha = 1.0 - smoothstep(0.0, fadeUnits,
                                           cyclePhase - travelUnits);
         ringAlpha = animationAlpha;
-    } else if (cyclePhase < travelUnits + fadeUnits + blankUnits) {
+    } else {
+        // Blackout. The next cycle selects a new start point and direction.
         fragColor = vec4(color, 1.0) * qt_Opacity;
         return;
-    } else {
-        // Fade back in at the next orbit's randomly selected point. Use the
-        // next cycle's seed here so the position and direction match exactly
-        // when the following visible revolution begins.
-        orbitCycle = cycleNumber + 1.0;
-        fadeInProgress = clamp(
-            (cyclePhase - travelUnits - fadeUnits - blankUnits) / fadeUnits,
-            0.0, 1.0);
-        // Resume movement immediately at the randomized point. Do not hold
-        // the orb stationary while its brightness comes back.
-        motionPhase = fadeInProgress * (fadeUnits / travelUnits);
-        animationAlpha = smoothstep(0.0, 0.22, fadeInProgress);
-        // Reveal the orb first; bring the orbital ring up more gradually.
-        ringAlpha = smoothstep(0.28, 1.0, fadeInProgress);
     }
 
     // All monitor instances derive identical direction and starting position
