@@ -113,6 +113,11 @@ Item {
             to: 8
         }
         RowLayout {
+            Kirigami.FormData.label: i18n("Meteor flame intensity")
+            Controls.Slider { id: flameIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
+            Controls.Label { text: flameIntensity.value + "%" }
+        }
+        RowLayout {
             Kirigami.FormData.label: i18n("Glow intensity")
             Controls.Slider { id: glow; from: 10; to: 100; stepSize: 5; Layout.fillWidth: true }
             Controls.Label { text: glow.value + "%" }
@@ -131,11 +136,6 @@ Item {
             Kirigami.FormData.label: i18n("Trail length")
             Controls.Slider { id: trailLength; from: 5; to: 100; stepSize: 5; Layout.fillWidth: true }
             Controls.Label { text: trailLength.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Flame intensity")
-            Controls.Slider { id: flameIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: flameIntensity.value + "%" }
         }
         RowLayout {
             Kirigami.FormData.label: i18n("Blackout duration")
