@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="760" viewBox="0 0 1800 760" role="img" aria-labelledby="title desc">
+  <title id="title">Swordfish Screensaver across four monitors</title>
+  <desc id="desc">Four side-by-side displays show one continuous glowing emerald oval orbit, with two bright plasma comet orbs and tapered trails crossing the monitor boundaries in sync.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="#07110f"/><stop offset=".55" stop-color="#020706"/><stop offset="1" stop-color="#101b18"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#07120f"/><stop offset=".5" stop-color="#020605"/><stop offset="1" stop-color="#091713"/></linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#72ff9c" stop-opacity=".25"/><stop offset=".25" stop-color="#43ff87" stop-opacity=".9"/><stop offset=".5" stop-color="#b5ffd0"/><stop offset=".75" stop-color="#43ff87" stop-opacity=".9"/><stop offset="1" stop-color="#72ff9c" stop-opacity=".25"/></linearGradient>
+    <radialGradient id="orb"><stop stop-color="#fff"/><stop offset=".16" stop-color="#eafff0"/><stop offset=".38" stop-color="#9dffb8"/><stop offset=".68" stop-color="#27ff70" stop-opacity=".95"/><stop offset="1" stop-color="#11d95c" stop-opacity="0"/></radialGradient>
+    <radialGradient id="halo"><stop stop-color="#3bff7d" stop-opacity=".34"/><stop offset="1" stop-color="#13ff6c" stop-opacity="0"/></radialGradient>
+    <filter id="glow" x="-80%" y="-100%" width="260%" height="300%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="soft" x="-80%" y="-100%" width="260%" height="300%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="orbGlow" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="18"/></filter>
+    <clipPath id="screenClip"><rect x="46" y="76" width="1708" height="548" rx="10"/></clipPath>
+  </defs>
+  <rect width="1800" height="760" fill="#0a100f"/>
+  <text x="900" y="42" fill="#c8f8d6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" letter-spacing="5" text-anchor="middle">ONE CONTINUOUS ANIMATION · FOUR SYNCHRONIZED DISPLAYS</text>
+  <rect x="28" y="58" width="1744" height="604" rx="25" fill="#242d2b" stroke="#66736d" stroke-width="3"/>
+  <g clip-path="url(#screenClip)">
+    <rect x="46" y="76" width="1708" height="548" fill="url(#bg)"/>
+    <g opacity=".18" fill="#7dfca7">
+      <circle cx="165" cy="175" r="2"/><circle cx="340" cy="530" r="2"/><circle cx="580" cy="140" r="2"/><circle cx="760" cy="510" r="2"/><circle cx="990" cy="170" r="2"/><circle cx="1190" cy="545" r="2"/><circle cx="1450" cy="160" r="2"/><circle cx="1640" cy="490" r="2"/>
+    </g>
+    <ellipse cx="900" cy="350" rx="810" ry="205" fill="none" stroke="#22ff71" stroke-width="50" opacity=".09" filter="url(#soft)"/>
+    <ellipse cx="900" cy="350" rx="810" ry="205" fill="none" stroke="#29ff79" stroke-width="12" opacity=".17" filter="url(#glow)"/>
+    <ellipse cx="900" cy="350" rx="810" ry="205" fill="none" stroke="url(#beam)" stroke-width="3.5" filter="url(#glow)"/>
+    <ellipse cx="900" cy="350" rx="810" ry="205" fill="none" stroke="#a6ffc2" stroke-width="1" opacity=".72"/>
+    <path d="M130 472 C310 550 510 557 690 507 C850 463 965 345 1120 257 C1290 160 1470 158 1650 232" fill="none" stroke="#31ff7b" stroke-width="18" stroke-linecap="round" opacity=".18" filter="url(#soft)"/>
+    <path d="M130 472 C310 550 510 557 690 507 C850 463 965 345 1120 257 C1290 160 1470 158 1650 232" fill="none" stroke="#68ff9a" stroke-width="5" stroke-linecap="round" opacity=".5" filter="url(#glow)"/>
+    <path d="M1720 426 C1550 510 1390 547 1230 500 C1080 456 980 350 825 263 C665 174 480 158 300 224" fill="none" stroke="#31ff7b" stroke-width="14" stroke-linecap="round" opacity=".14" filter="url(#soft)"/>
+    <path d="M1720 426 C1550 510 1390 547 1230 500 C1080 456 980 350 825 263 C665 174 480 158 300 224" fill="none" stroke="#7dffa6" stroke-width="4" stroke-linecap="round" opacity=".42" filter="url(#glow)"/>
+    <circle cx="900" cy="145" r="130" fill="url(#halo)"/>
+    <circle cx="900" cy="145" r="54" fill="#28ff70" opacity=".55" filter="url(#orbGlow)"/>
+    <circle cx="900" cy="145" r="34" fill="url(#orb)" filter="url(#glow)"/>
+    <circle cx="900" cy="145" r="9" fill="#fff"/>
+    <circle cx="900" cy="555" r="125" fill="url(#halo)"/>
+    <circle cx="900" cy="555" r="48" fill="#28ff70" opacity=".48" filter="url(#orbGlow)"/>
+    <circle cx="900" cy="555" r="30" fill="url(#orb)" filter="url(#glow)"/>
+    <circle cx="900" cy="555" r="8" fill="#fff"/>
+    <g stroke="#baffce" stroke-linecap="round" opacity=".8" filter="url(#glow)">
+      <path d="M870 140 l-55 -17 M873 151 l-78 7 M878 160 l-54 30" stroke-width="3"/>
+      <path d="M930 551 l52 17 M926 562 l76 -2 M920 568 l48 28" stroke-width="3"/>
+    </g>
+    <g stroke="#1c3b2a" stroke-width="2" opacity=".55">
+      <path d="M472 76 V624 M898 76 V624 M1324 76 V624"/>
+    </g>
+  </g>
+  <g fill="#66716c">
+    <rect x="444" y="662" width="70" height="20" rx="5"/><rect x="870" y="662" width="70" height="20" rx="5"/><rect x="1296" y="662" width="70" height="20" rx="5"/>
+    <path d="M760 704 H1040 L1080 726 H720 Z"/>
+  </g>
+  <text x="900" y="748" fill="#8da69a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" text-anchor="middle" letter-spacing="2">ILLUSTRATIVE FOUR-MONITOR VIEW · THE ORBIT CONTINUES ACROSS DISPLAY EDGES</text>
+</svg>
