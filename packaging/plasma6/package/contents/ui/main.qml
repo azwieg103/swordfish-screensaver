@@ -10,7 +10,7 @@ WallpaperItem {
     property bool cfg_showDate: true
     property bool cfg_clock24Hour: true
     property string cfg_green: "classic"
-    property int cfg_orbs: 3
+    property int cfg_orbs: 2
     property int cfg_beamWidth: 14
     property int cfg_speed: 20
     property string cfg_shape: "oval"
@@ -60,16 +60,11 @@ WallpaperItem {
     })
     property color plasmaColor: palette[cfg_green] || palette.classic
 
-    Timer {
-        interval: 16
-        repeat: true
-        running: true
-        onTriggered: {
-            // Target 60 updates per second; phase remains time-based so a delayed
-            // frame never causes the animation to pause or accumulate drift.
-            root.phase = Date.now() / 1000.0
-            canvas.requestPaint()
-        }
+    // Let Qt schedule updates with scene composition instead of a fixed timer.
+    function animateFrame() {
+        root.phase = Date.now() / 1000.0
+        canvas.requestPaint()
+        canvas.requestAnimationFrame(animateFrame)
     }
 
     Timer {
@@ -85,12 +80,12 @@ WallpaperItem {
         timeLabel = Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
     }
 
-    Component.onCompleted: { updateClock(); refreshDisplayGeometry() }
+    Component.onCompleted: { updateClock(); refreshDisplayGeometry(); canvas.requestAnimationFrame(animateFrame) }
 
     Canvas {
         id: canvas
         anchors.fill: parent
-        renderStrategy: Canvas.Threaded
+        renderStrategy: Canvas.Cooperative
 
         onPaint: {
             const ctx = getContext("2d")
@@ -115,9 +110,7 @@ WallpaperItem {
             const t = root.phase * root.cfg_speed / 10.0
             const direction = root.cfg_direction === "counterclockwise" ? -1 : 1
             const angle = direction * t * Math.PI * 2 / 18.0
-            const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 3.2)
             const glow = root.plasmaColor
-            const greens = [glow, glow, glow, glow]
 
             ctx.reset()
             ctx.fillStyle = "#010207"
@@ -143,7 +136,7 @@ WallpaperItem {
             // Build the closed oval with explicit line segments. Qt's Canvas
             // threaded renderer does not consistently render ellipse() paths
             // on every Plasma/Qt build; this keeps the connecting track visible.
-            const trackSegments = 360
+            const trackSegments = 180
             for (let segment = 0; segment <= trackSegments; ++segment) {
                 const a = segment * Math.PI * 2 / trackSegments
                 const px = rx * Math.cos(a)
@@ -162,32 +155,6 @@ WallpaperItem {
             ctx.lineJoin = "round"
             ctx.lineCap = "round"
             ctx.stroke()
-
-            // Add short bright overlays at each orb without breaking the
-            // underlying closed track.
-            for (let i = 0; i < orbAngles.length; ++i) {
-                const center = orbAngles[i]
-                const halfSpan = 0.42
-                ctx.beginPath()
-                const arcSegments = 32
-                for (let segment = 0; segment <= arcSegments; ++segment) {
-                    const a = center - halfSpan + (2 * halfSpan * segment / arcSegments)
-                    const px = rx * Math.cos(a)
-                    const py = ry * Math.sin(a)
-                    if (segment === 0)
-                        ctx.moveTo(px, py)
-                    else
-                        ctx.lineTo(px, py)
-                }
-                ctx.strokeStyle = Qt.rgba(
-                    glow.r * (0.55 + glowLevel * 0.45),
-                    glow.g * (0.55 + glowLevel * 0.45),
-                    glow.b * (0.55 + glowLevel * 0.45), 1)
-                ctx.lineWidth = trackWidth * (1.10 + glowLevel * 0.25)
-                ctx.lineCap = "round"
-                ctx.lineJoin = "round"
-                ctx.stroke()
-            }
 
             // Draw the moving heads. Their spacing and direction follow the
             // same phase, so they never pause when a paint event is delayed.
