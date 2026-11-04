@@ -6,18 +6,20 @@ import org.zwiegnet.swordfish.geometry 1.0
 WallpaperItem {
     id: root
 
-    property bool cfg_showClock: false
-    property bool cfg_showDate: false
-    property bool cfg_clock24Hour: true
-    property string cfg_green: "classic"
-    property int cfg_orbs: 1
-    property int cfg_beamWidth: 14
-    property int cfg_speed: 20
-    property string cfg_shape: "oval"
-    property string cfg_direction: "clockwise"
-    property int cfg_glow: 70
-    property int cfg_orbBrightness: 100
-    property int cfg_orbitSize: 100
+    // Read live values from Plasma's KConfigPropertyMap. The cfg_* properties
+    // belong to config.qml; they are not the runtime wallpaper settings.
+    readonly property bool showClock: configuration.showClock
+    readonly property bool showDate: configuration.showDate
+    readonly property bool clock24Hour: configuration.clock24Hour
+    readonly property string green: configuration.green
+    readonly property int orbs: configuration.orbs
+    readonly property int beamWidthSetting: configuration.beamWidth
+    readonly property int speed: configuration.speed
+    readonly property string shape: configuration.shape
+    readonly property string direction: configuration.direction
+    readonly property int glow: configuration.glow
+    readonly property int orbBrightness: configuration.orbBrightness
+    readonly property int orbitSize: configuration.orbitSize
 
     property rect screenRect: Qt.rect(0, 0, width, height)
     property rect desktopRect: Qt.rect(0, 0, width, height)
@@ -62,7 +64,7 @@ WallpaperItem {
         running: true
         onTriggered: {
             root.refreshDisplayGeometry()
-            if (root.cfg_showClock || root.cfg_showDate)
+            if (root.showClock || root.showDate)
                 root.updateClock()
         }
     }
@@ -71,26 +73,26 @@ WallpaperItem {
     // All wallpaper instances read the same monotonic clock from the native plugin.
     FrameAnimation {
         running: true
-        onTriggered: shader.phase = DisplayGeometry.elapsedSeconds() * root.cfg_speed / 10.0
+        onTriggered: shader.phase = DisplayGeometry.elapsedSeconds() * root.speed / 10.0
     }
 
     ShaderEffect {
         id: shader
         anchors.fill: parent
-        property real phase: DisplayGeometry.elapsedSeconds() * root.cfg_speed / 10.0
+        property real phase: DisplayGeometry.elapsedSeconds() * root.speed / 10.0
         property vector2d desktopSize: Qt.vector2d(root.desktopWidth, root.desktopHeight)
         property vector2d screenOrigin: Qt.vector2d(root.screenX, root.screenY)
         property vector2d screenSize: Qt.vector2d(root.width, root.height)
         property color plasmaColor: root.plasmaColor
-        property real orbitSize: root.cfg_orbitSize / 100.0
-        property real beamWidth: root.cfg_beamWidth
-        property real glow: root.cfg_glow / 100.0
-        property real orbBrightness: root.cfg_orbBrightness / 100.0
-        property real orbCount: Math.max(1, Math.min(8, root.cfg_orbs))
-        property real shape: root.cfg_shape === "circle" ? 1.0 :
-                             root.cfg_shape === "wide" ? 2.0 :
-                             root.cfg_shape === "tall" ? 3.0 : 0.0
-        property real direction: root.cfg_direction === "counterclockwise" ? -1.0 : 1.0
+        property real orbitSize: root.orbitSize / 100.0
+        property real beamWidth: root.beamWidthSetting
+        property real glow: root.glow / 100.0
+        property real orbBrightness: root.orbBrightness / 100.0
+        property real orbCount: Math.max(1, Math.min(8, root.orbs))
+        property real shape: root.shape === "circle" ? 1.0 :
+                             root.shape === "wide" ? 2.0 :
+                             root.shape === "tall" ? 3.0 : 0.0
+        property real direction: root.direction === "counterclockwise" ? -1.0 : 1.0
         fragmentShader: "qrc:/org/zwiegnet/swordfish/shaders/swordfish.frag.qsb"
     }
 
@@ -99,13 +101,13 @@ WallpaperItem {
         anchors.bottom: parent.bottom
         anchors.rightMargin: 30
         anchors.bottomMargin: 24
-        visible: root.cfg_showClock || root.cfg_showDate
+        visible: root.showClock || root.showDate
 
         Column {
             spacing: 2
             anchors.right: parent.right
             Text {
-                visible: root.cfg_showDate
+                visible: root.showDate
                 text: root.dateLabel
                 color: "white"
                 font.pixelSize: 17
@@ -113,7 +115,7 @@ WallpaperItem {
                 styleColor: "#99000000"
             }
             Text {
-                visible: root.cfg_showClock
+                visible: root.showClock
                 text: root.timeLabel
                 color: "white"
                 font.pixelSize: 28
