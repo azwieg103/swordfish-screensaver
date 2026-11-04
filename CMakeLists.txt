@@ -77,7 +77,10 @@ install(TARGETS swordfish-screensaver RUNTIME DESTINATION bin)
 install(PROGRAMS scripts/swordfish-idle DESTINATION bin)
 install(FILES packaging/swordfish-idle.desktop DESTINATION share/applications)
 
-# Build and install the KDE Plasma 6 wallpaper and its QScreen geometry helper.
-if(UNIX AND NOT APPLE)
+# Build the KDE Plasma 6 Screen Locking integration where its development
+# dependencies are available (RPM builds). Other OS packages build the
+# portable SDL2/OpenGL application without requiring KDE/Plasma SDK packages.
+option(SWORDFISH_BUILD_PLASMA6 "Build the KDE Plasma 6 Screen Locking integration" ON)
+if(UNIX AND NOT APPLE AND SWORDFISH_BUILD_PLASMA6)
   add_subdirectory(packaging/plasma6)
 endif()
