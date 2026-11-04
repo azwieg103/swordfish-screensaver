@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        34%{?dist}
+Release:        35%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,9 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-35
+- Set Emerald as the default plasma palette for new configurations.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-34
 - Skip the pulse pause entirely when the pulse effect is disabled.
 
