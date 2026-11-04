@@ -10,7 +10,7 @@ WallpaperItem {
     property bool cfg_showDate: false
     property bool cfg_clock24Hour: true
     property string cfg_green: "classic"
-    property int cfg_orbs: 2
+    property int cfg_orbs: 1
     property int cfg_beamWidth: 14
     property int cfg_speed: 20
     property string cfg_shape: "oval"
