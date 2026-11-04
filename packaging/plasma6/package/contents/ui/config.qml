@@ -13,7 +13,7 @@ Item {
     property alias cfg_showClock: showClock.checked
     property alias cfg_showDate: showDate.checked
     property alias cfg_clock24Hour: clock24Hour.checked
-    property string cfg_green: "classic"
+    property string cfg_green: "emerald"
     property alias cfg_beamWidth: beamWidth.value
     property alias cfg_speed: speed.value
     property alias cfg_orbs: orbs.value
