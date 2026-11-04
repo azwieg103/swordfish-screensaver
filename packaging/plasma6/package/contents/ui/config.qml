@@ -103,23 +103,31 @@ Item {
                 { text: i18n("Tall oval"), value: "tall" }
             ]
         }
-        Controls.ComboBox {
-            id: direction
+        ColumnLayout {
             Kirigami.FormData.label: i18n("Travel direction")
-            // Use a plain string model for maximum compatibility with the
-            // Screen Locking KCM's wallpaper configuration loader.
-            currentIndex: root.cfg_direction === "clockwise" ? 1 :
-                          root.cfg_direction === "counterclockwise" ? 2 : 0
-            onActivated: {
-                root.cfg_direction = index === 1 ? "clockwise" :
-                                     index === 2 ? "counterclockwise" : "random"
+            spacing: Kirigami.Units.smallSpacing
+
+            Controls.ButtonGroup {
+                id: directionGroup
             }
-            model: [
-                i18n("Random"),
-                i18n("Clockwise"),
-                i18n("Counterclockwise")
-            ]
-            popup.height: Math.min(implicitContentHeight, 3 * 40)
+            Controls.RadioButton {
+                text: i18n("Random (alternate every three cycles)")
+                checked: root.cfg_direction === "random"
+                ButtonGroup.group: directionGroup
+                onToggled: if (checked) root.cfg_direction = "random"
+            }
+            Controls.RadioButton {
+                text: i18n("Clockwise")
+                checked: root.cfg_direction === "clockwise"
+                ButtonGroup.group: directionGroup
+                onToggled: if (checked) root.cfg_direction = "clockwise"
+            }
+            Controls.RadioButton {
+                text: i18n("Counterclockwise")
+                checked: root.cfg_direction === "counterclockwise"
+                ButtonGroup.group: directionGroup
+                onToggled: if (checked) root.cfg_direction = "counterclockwise"
+            }
         }
         Controls.SpinBox {
             id: orbs
