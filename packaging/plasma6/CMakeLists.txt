@@ -28,6 +28,7 @@ set_target_properties(swordfishgeometryplugin PROPERTIES
 # Compile the fragment shader to Qt's portable QShader format at build time.
 qt_add_shaders(swordfishgeometryplugin swordfish_shaders
     PREFIX "/org/zwiegnet/swordfish/shaders"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
     FILES shaders/swordfish.frag
 )
 
