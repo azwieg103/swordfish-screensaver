@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        38%{?dist}
+Release:        39%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,11 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-39
+- Fade the orb and orbit smoothly to black and back between revolutions.
+- Add adjustable blackout duration, defaulting to ten seconds.
+- Clarify Random travel direction as a new choice for every orbit.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-38
 - Choose a new pseudo-random travel direction for each orbit cycle.
 - Add configurable flame intensity from 0% to 200%.
