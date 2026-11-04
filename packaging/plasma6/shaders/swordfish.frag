@@ -18,6 +18,7 @@ layout(std140, binding = 0) uniform buf {
     float orbCount;
     float trailLength;
     float flameIntensity;
+    float blankDuration;
     float speedScale;
     float shape;
     float direction;
@@ -45,17 +46,30 @@ void main()
 
     vec3 color = vec3(0.003, 0.006, 0.014);
 
-    // One complete revolution, followed by five seconds with the entire
-    // animation (including the orbit) completely blank.
+    // One full revolution, a smooth fade-out, an adjustable blackout,
+    // then a smooth fade-in before the next revolution.
     float travelUnits = 90.0 / max(1.0, speedScale * 20.0);
-    const float blankUnits = 5.0;
-    float cycleUnits = travelUnits + blankUnits;
+    const float fadeUnits = 1.25;
+    float blankUnits = max(0.0, blankDuration);
+    float cycleUnits = travelUnits + fadeUnits * 2.0 + blankUnits;
     float cycleNumber = floor(phase / cycleUnits);
     float cyclePhase = mod(phase, cycleUnits);
+    float animationAlpha = 1.0;
+    float motionPhase = 0.0;
 
-    if (cyclePhase >= travelUnits) {
+    if (cyclePhase < travelUnits) {
+        motionPhase = cyclePhase / travelUnits;
+    } else if (cyclePhase < travelUnits + fadeUnits) {
+        motionPhase = 1.0;
+        animationAlpha = 1.0 - smoothstep(0.0, fadeUnits,
+                                          cyclePhase - travelUnits);
+    } else if (cyclePhase < travelUnits + fadeUnits + blankUnits) {
         fragColor = vec4(color, 1.0) * qt_Opacity;
         return;
+    } else {
+        motionPhase = 0.0;
+        animationAlpha = smoothstep(0.0, fadeUnits,
+            cyclePhase - travelUnits - fadeUnits - blankUnits);
     }
 
     // Pick a fresh, repeatable pseudo-random direction for each orbit cycle.
@@ -63,14 +77,15 @@ void main()
     float randomDirection = fract(sin(cycleNumber * 127.1 + 311.7) * 43758.5453) < 0.5
                             ? -1.0 : 1.0;
     float motionDirection = direction == 0.0 ? randomDirection : direction;
-    float angleBase = motionDirection * (cyclePhase / travelUnits) * (2.0 * PI);
+    float angleBase = motionDirection * motionPhase * (2.0 * PI);
+    vec3 effectTint = plasmaColor.rgb * animationAlpha;
 
     vec2 q = p - center;
     float normalizedRadius = length(vec2(q.x / max(rx, 1.0), q.y / max(ry, 1.0)));
     float orbitDistance = abs(normalizedRadius - 1.0) * min(rx, ry);
     float lineWidth = 0.7 + beamWidth * 0.10;
     float line = 1.0 - smoothstep(lineWidth, lineWidth + 1.5, orbitDistance);
-    color += plasmaColor.rgb * line * (0.20 + glow * 0.16);
+    color += effectTint * line * (0.20 + glow * 0.16);
 
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
     float headRadius = 8.0 + beamWidth * 0.35;
@@ -113,8 +128,8 @@ void main()
         float flameFade = (1.0 - smoothstep(0.72, 1.0, flameU))
                         * smoothstep(-0.08, 0.08, flameU);
         float flame = flameShape * flameFade;
-        vec3 flameColor = mix(plasmaColor.rgb, vec3(1.0, 0.78, 0.38), 0.48);
-        vec3 flameCoreColor = mix(plasmaColor.rgb, vec3(1.0), 0.72);
+        vec3 flameColor = mix(effectTint, vec3(1.0, 0.78, 0.38), 0.48);
+        vec3 flameCoreColor = mix(effectTint, vec3(1.0), 0.72);
         float flamePower = clamp(flameIntensity / 100.0, 0.0, 2.0);
         color += flameColor * flame * (0.75 + glow * 0.65)
                  * orbBrightness * flamePower;
@@ -128,17 +143,17 @@ void main()
         float tailFade = pow(max(0.0, 1.0 - trailProgress), 0.72);
         float trailMask = trailActive * tailFade;
 
-        color += plasmaColor.rgb * trailHalo * trailMask
+        color += effectTint * trailHalo * trailMask
                  * (0.55 + glow * 0.85) * orbBrightness;
-        color += plasmaColor.rgb * trailCore * trailMask
+        color += effectTint * trailCore * trailMask
                  * (0.65) * orbBrightness;
 
         // Radial falloff keeps every orb round and smoothly glowing.
         float halo = exp(-pow(d / max(1.0, headRadius * (2.0 + glow * 1.8)), 2.0));
         float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.48));
-        color += plasmaColor.rgb * halo * (0.45 + glow * 0.75)
+        color += effectTint * halo * (0.45 + glow * 0.75)
                  * orbBrightness;
-        color += plasmaColor.rgb * core * 1.35 * orbBrightness;
+        color += effectTint * core * 1.35 * orbBrightness;
     }
 
     fragColor = vec4(color, 1.0) * qt_Opacity;
