@@ -42,7 +42,8 @@ WallpaperItem {
         "ice": Qt.rgba(0.18, 0.88, 1.0, 1),
         "amber": Qt.rgba(1.0, 0.58, 0.08, 1),
         "violet": Qt.rgba(0.72, 0.35, 1.0, 1),
-        "white": Qt.rgba(0.88, 1.0, 1.0, 1)
+        "white": Qt.rgba(0.88, 1.0, 1.0, 1),
+        "fireball": Qt.rgba(1.0, 0.16, 0.025, 1)
     })
     property color plasmaColor: palette[root.green] || palette.classic
 
