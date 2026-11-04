@@ -14,5 +14,6 @@
     <entry name="glow" type="Int"><default>70</default></entry>
     <entry name="orbBrightness" type="Int"><default>100</default></entry>
     <entry name="orbitSize" type="Int"><default>100</default></entry>
+    <entry name="trailLength" type="Int"><default>35</default></entry>
   </group>
 </kcfg>
