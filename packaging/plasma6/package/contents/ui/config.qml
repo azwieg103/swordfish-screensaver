@@ -87,7 +87,7 @@ Item {
         }
         Controls.ComboBox {
             id: direction
-            Kirigami.FormData.label: i18n("Travel direction")
+            Kirigami.FormData.label: i18n("Starting direction")
             textRole: "text"
             valueRole: "value"
             model: [
