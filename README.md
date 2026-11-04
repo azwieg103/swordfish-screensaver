@@ -12,7 +12,7 @@ The concept artwork above was created specifically for this repository and is de
 
 **0.2.1 development build.** The standalone application supports synchronized multi-monitor rendering and configurable green palettes. Linux includes an optional idle launcher using GNOME Mutter's session idle monitor or the X11 `xprintidle` utility. This launcher is not a native KDE screensaver plugin and does not currently provide a KDE Wayland idle backend. The desktop's own screen locker remains responsible for password-protected locking. The animation supports thicker rays, configurable beam splitting, and 1–8 orbiting plasma orbs.
 
-GitHub Actions builds Linux, Kali Rolling (including a native amd64 `.deb` package), macOS 26 arm64 and Intel x86_64 app bundles, a self-contained Windows x64 ZIP, FreeBSD 14.3 and 15.0 archives, and RPMs for CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. Platform support is considered CI-verified only after the corresponding workflow jobs pass. Oracle Solaris 11.4 has a local build script and an optional manual workflow for a self-hosted Solaris runner; Solaris compilation and runtime are not yet verified.
+GitHub Actions builds native packages or platform archives across Ubuntu 22.04/24.04/26.04, Debian 12/13, Kali Rolling, Fedora 43/44, Arch Linux, CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, AlmaLinux 10, macOS 26 arm64 and Intel x86_64, Windows x64, and FreeBSD 14.3/15.0. Ubuntu and Debian produce `.deb` packages; Kali produces a `.deb`; the EL10 family produces RPMs; other Linux builds currently produce tested executable archives. Platform support is considered CI-verified only after the corresponding workflow jobs pass. Oracle Solaris 11.4 has a local build script and an optional manual workflow for a self-hosted Solaris runner; Solaris compilation and runtime are not yet verified.
 
 ## Download releases
 
@@ -24,7 +24,7 @@ GitHub Actions builds an arm64 app bundle on macOS 26 and an Intel x86_64 app bu
 
 ## Linux distribution coverage
 
-The RPM pipeline uses one shared spec across CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. The UBI 10 image was removed from the build matrix because its published repositories do not provide all of the required OpenGL/X11 development packages; CentOS Stream 10 provides a RHEL-family build target with the required development dependencies. Kali Rolling is built and packaged separately as a Debian-format amd64 `.deb`; this does not yet claim generic Debian 13 compatibility. Arch packaging remains future work.
+The RPM pipeline uses one shared spec across CentOS Stream 10, Rocky Linux 10, Oracle Linux 10, and AlmaLinux 10. Ubuntu 22.04, 24.04, and 26.04 plus Debian 12 and 13 build and package standalone amd64 `.deb` files. Kali Rolling has its own `.deb` job. Fedora 43/44 and Arch Linux receive tested executable archives. The non-RPM Linux packages intentionally omit the KDE Plasma 6 Screen Locking integration because that component requires the Plasma 6 development SDK; the EL10 RPM builds include it.
 
 ## Build on AlmaLinux 10
 
@@ -191,7 +191,8 @@ A Windows x64 application build is produced by GitHub Actions using Visual Studi
 - [ ] Create a native macOS `.saver` integration
 - [ ] Verify EL10 RPM builds across all four container images
 - [ ] Validate Kali-built DEB compatibility on Debian 13 before claiming generic Debian support
-- [ ] Add Arch Linux build and package pipeline
+- [x] Add Fedora 43/44 and Arch Linux build pipelines
+- [x] Add Ubuntu 22.04/24.04/26.04 and Debian 12/13 DEB packaging pipelines
 - [ ] Verify FreeBSD 14.3 and 15.0 CI builds
 - [ ] Create native FreeBSD package/Ports Collection recipe
 - [ ] Compile and test on Oracle Solaris 11.4
