@@ -15,8 +15,5 @@
     <entry name="orbBrightness" type="Int"><default>100</default></entry>
     <entry name="orbitSize" type="Int"><default>100</default></entry>
     <entry name="trailLength" type="Int"><default>35</default></entry>
-    <entry name="pulseInterval" type="Int"><default>72</default></entry>
-    <entry name="pulseEnabled" type="Bool"><default>true</default></entry>
-    <entry name="pulseIntensity" type="Int"><default>100</default></entry>
   </group>
 </kcfg>
