@@ -22,7 +22,8 @@ Item {
     property alias cfg_glow: glow.value
     property alias cfg_orbBrightness: orbBrightness.value
     property alias cfg_orbitSize: orbitSize.value
-    property alias cfg_trailLength: trailLength.value\n    property alias cfg_pulseInterval: pulseInterval.value
+    property alias cfg_trailLength: trailLength.value
+    property alias cfg_pulseInterval: pulseInterval.value
 
     implicitWidth: form.implicitWidth
     implicitHeight: form.implicitHeight
