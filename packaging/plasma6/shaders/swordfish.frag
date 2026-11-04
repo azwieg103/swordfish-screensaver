@@ -60,9 +60,10 @@ void main()
     // pulseInterval is wall-clock seconds. Two equal travel legs are followed by a short radiating pulse.
     float travelUnits = max(10.0, pulseInterval);
     float legUnits = travelUnits * 0.5;
-    float cycleUnits = travelUnits + pulseUnits;
+    float activePulseUnits = pulseEnabled > 0.5 ? pulseUnits : 0.0;
+    float cycleUnits = travelUnits + activePulseUnits;
     float cyclePhase = mod(phase, cycleUnits);
-    bool pulseStage = cyclePhase >= travelUnits;
+    bool pulseStage = pulseEnabled > 0.5 && cyclePhase >= travelUnits;
     float legPhase = pulseStage ? legUnits : mod(cyclePhase, legUnits);
     float legIndex = cyclePhase < legUnits ? 0.0 : 1.0;
     float motionDirection = direction == 0.0
