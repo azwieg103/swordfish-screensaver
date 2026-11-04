@@ -89,8 +89,8 @@ void main()
         float across = abs(relative.x * tangent.y - relative.y * tangent.x);
         float tailLengthPx = max(42.0, min(rx, ry) * 0.105);
         float tailProgress = clamp(-along / tailLengthPx, 0.0, 1.0);
-        float tailActive = smoothstep(1.5, -2.0, along)
-                           * (1.0 - smoothstep(-tailLengthPx, -tailLengthPx - 3.0, along));
+        float tailActive = (1.0 - smoothstep(-2.0, 1.5, along))
+                           * smoothstep(-tailLengthPx - 3.0, -tailLengthPx, along);
         float taper = mix(0.8, 0.035, pow(tailProgress, 0.82));
         float tailWidth = max(1.0, (headRadius * (1.15 + glow * 1.35)) * taper);
         float tailCore = exp(-pow(across / max(0.8, tailWidth * 0.42), 2.0));
