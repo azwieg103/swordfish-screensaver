@@ -12,6 +12,7 @@
     <entry name="shape" type="String"><default>oval</default></entry>
     <entry name="direction" type="String"><default>clockwise</default></entry>
     <entry name="glow" type="Int"><default>70</default></entry>
+    <entry name="orbBrightness" type="Int"><default>100</default></entry>
     <entry name="orbitSize" type="Int"><default>100</default></entry>
   </group>
 </kcfg>
