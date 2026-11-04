@@ -8,7 +8,7 @@
     <entry name="green" type="String"><default>classic</default></entry>
     <entry name="beamWidth" type="Int"><default>14</default></entry>
     <entry name="speed" type="Int"><default>20</default></entry>
-    <entry name="orbs" type="Int"><default>2</default></entry>
+    <entry name="orbs" type="Int"><default>1</default></entry>
     <entry name="shape" type="String"><default>oval</default></entry>
     <entry name="direction" type="String"><default>clockwise</default></entry>
     <entry name="glow" type="Int"><default>70</default></entry>
