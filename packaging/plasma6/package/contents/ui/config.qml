@@ -13,12 +13,12 @@ Item {
     property alias cfg_showClock: showClock.checked
     property alias cfg_showDate: showDate.checked
     property alias cfg_clock24Hour: clock24Hour.checked
-    property alias cfg_green: green.currentValue
+    property string cfg_green: "classic"
     property alias cfg_beamWidth: beamWidth.value
     property alias cfg_speed: speed.value
     property alias cfg_orbs: orbs.value
-    property alias cfg_shape: shape.currentValue
-    property alias cfg_direction: direction.currentValue
+    property string cfg_shape: "oval"
+    property string cfg_direction: "clockwise"
     property alias cfg_glow: glow.value
     property alias cfg_orbitSize: orbitSize.value
 
@@ -47,6 +47,8 @@ Item {
             Kirigami.FormData.label: i18n("Green palette")
             textRole: "text"
             valueRole: "value"
+            currentIndex: Math.max(0, indexOfValue(root.cfg_green))
+            onActivated: root.cfg_green = currentValue
             model: [
                 { text: i18n("Classic"), value: "classic" },
                 { text: i18n("Lime"), value: "lime" },
@@ -78,6 +80,8 @@ Item {
             Kirigami.FormData.label: i18n("Orbit shape")
             textRole: "text"
             valueRole: "value"
+            currentIndex: Math.max(0, indexOfValue(root.cfg_shape))
+            onActivated: root.cfg_shape = currentValue
             model: [
                 { text: i18n("Oval"), value: "oval" },
                 { text: i18n("Circle"), value: "circle" },
@@ -90,6 +94,8 @@ Item {
             Kirigami.FormData.label: i18n("Starting direction")
             textRole: "text"
             valueRole: "value"
+            currentIndex: Math.max(0, indexOfValue(root.cfg_direction))
+            onActivated: root.cfg_direction = currentValue
             model: [
                 { text: i18n("Clockwise"), value: "clockwise" },
                 { text: i18n("Counterclockwise"), value: "counterclockwise" }
