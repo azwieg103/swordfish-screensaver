@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        31%{?dist}
+Release:        32%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
