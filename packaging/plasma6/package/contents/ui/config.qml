@@ -24,6 +24,7 @@ Item {
     property alias cfg_orbitSize: orbitSize.value
     property alias cfg_trailLength: trailLength.value
     property alias cfg_flameIntensity: flameIntensity.value
+    property alias cfg_blankDuration: blankDuration.value
 
     implicitWidth: form.implicitWidth
     implicitHeight: form.implicitHeight
@@ -94,13 +95,13 @@ Item {
         }
         Controls.ComboBox {
             id: direction
-            Kirigami.FormData.label: i18n("Starting direction")
+            Kirigami.FormData.label: i18n("Travel direction")
             textRole: "text"
             valueRole: "value"
             currentIndex: Math.max(0, indexOfValue(root.cfg_direction))
             onActivated: root.cfg_direction = currentValue
             model: [
-                { text: i18n("Random (clockwise, counterclockwise, pulse)"), value: "random" },
+                { text: i18n("Random (changes every orbit)"), value: "random" },
                 { text: i18n("Clockwise"), value: "clockwise" },
                 { text: i18n("Counterclockwise"), value: "counterclockwise" }
             ]
@@ -135,6 +136,11 @@ Item {
             Kirigami.FormData.label: i18n("Flame intensity")
             Controls.Slider { id: flameIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
             Controls.Label { text: flameIntensity.value + "%" }
+        }
+        RowLayout {
+            Kirigami.FormData.label: i18n("Blackout duration")
+            Controls.Slider { id: blankDuration; from: 0; to: 60; stepSize: 1; Layout.fillWidth: true }
+            Controls.Label { text: blankDuration.value + " sec" }
         }
         Controls.SpinBox {
             id: beamWidth
