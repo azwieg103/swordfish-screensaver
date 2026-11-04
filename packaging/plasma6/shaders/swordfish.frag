@@ -18,6 +18,7 @@ layout(std140, binding = 0) uniform buf {
     float orbCount;
     float trailLength;
     float pulseInterval;
+    float speedScale;
     float shape;
     float direction;
 };
@@ -53,9 +54,8 @@ void main()
     vec3 color = vec3(0.003, 0.006, 0.014);
 
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
-    const float pulseUnits = 4.0;
-    // pulseInterval is expressed in the shader's speed-scaled time units.
-    // Two equal travel legs are followed by a short radiating pulse.
+    const float pulseUnits = 2.0;
+    // pulseInterval is wall-clock seconds. Two equal travel legs are followed by a short radiating pulse.
     float travelUnits = max(10.0, pulseInterval);
     float legUnits = travelUnits * 0.5;
     float cycleUnits = travelUnits + pulseUnits;
@@ -66,10 +66,10 @@ void main()
     float motionDirection = direction == 0.0
                             ? (legIndex < 0.5 ? 1.0 : -1.0)
                             : direction;
-    float angleBase = motionDirection * (legPhase / legUnits) * (4.0 * 2.0 * PI);
+    float angleBase = motionDirection * (legPhase / legUnits) * (4.0 * 2.0 * PI) * speedScale;
     float pulsePhase = max(0.0, cyclePhase - travelUnits);
     float pulse = pulseStage
-                  ? exp(-pow((pulsePhase - 1.15) / 0.48, 2.0))
+                  ? exp(-pow((pulsePhase - 0.58) / 0.25, 2.0))
                   : 0.0;
     float pulseBoost = 1.0 + pulse * 3.2;
     // The continuous orbit brightens and blooms outward during the pulse.
