@@ -11,4 +11,5 @@ public:
 
     Q_INVOKABLE QRect screenGeometry(QObject *item) const;
     Q_INVOKABLE QRect virtualGeometry(QObject *item) const;
+    Q_INVOKABLE qreal elapsedSeconds() const;
 };
