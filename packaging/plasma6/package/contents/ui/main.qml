@@ -16,6 +16,7 @@ WallpaperItem {
     property string cfg_shape: "oval"
     property string cfg_direction: "clockwise"
     property int cfg_glow: 70
+    property int cfg_orbBrightness: 100
     property int cfg_orbitSize: 100
 
     property rect screenRect: Qt.rect(0, 0, width, height)
@@ -84,6 +85,7 @@ WallpaperItem {
         property real orbitSize: root.cfg_orbitSize / 100.0
         property real beamWidth: root.cfg_beamWidth
         property real glow: root.cfg_glow / 100.0
+        property real orbBrightness: root.cfg_orbBrightness / 100.0
         property real orbCount: Math.max(1, Math.min(8, root.cfg_orbs))
         property real shape: root.cfg_shape === "circle" ? 1.0 :
                              root.cfg_shape === "wide" ? 2.0 :
