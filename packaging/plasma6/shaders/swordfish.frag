@@ -50,13 +50,36 @@ void main()
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
     float angleBase = direction * phase * (2.0 * PI / 18.0);
     float headRadius = 3.0 + beamWidth * 0.22;
+    float pixelAngle = atan(q.y / max(ry, 1.0), q.x / max(rx, 1.0));
+    const float tailLength = 0.58;
 
     for (int i = 0; i < 8; ++i) {
         if (float(i) >= count)
             break;
+
         float angle = angleBase + float(i) * (2.0 * PI / count);
         vec2 head = center + vec2(rx * cos(angle), ry * sin(angle));
         float d = length(p - head);
+
+        // A tapered arc follows the orbit behind each moving head.
+        // The thin base orbit remains visible underneath the comet tail.
+        float trailAngle = mod(direction * (angle - pixelAngle) + 2.0 * PI,
+                               2.0 * PI);
+        float trailProgress = clamp(trailAngle / tailLength, 0.0, 1.0);
+        float trailFade = pow(max(0.0, 1.0 - trailProgress), 1.45);
+        float trailActive = 1.0 - smoothstep(tailLength * 0.88,
+                                             tailLength, trailAngle);
+        float taper = mix(0.12, 1.0, exp(-trailProgress * 2.0));
+        float tailCoreWidth = (1.0 + beamWidth * 0.075) * taper;
+        float tailGlowWidth = (headRadius * (1.7 + glow * 1.8)) * taper;
+        float tailCore = exp(-pow(orbitDistance / max(0.8, tailCoreWidth), 2.0));
+        float tailGlow = exp(-orbitDistance / max(1.0, tailGlowWidth * 2.5));
+
+        color += plasmaColor.rgb * tailGlow * trailFade * trailActive
+                 * (0.75 + glow * 0.9);
+        color += mix(plasmaColor.rgb, vec3(0.72, 0.96, 1.0), 0.28)
+                 * tailCore * trailFade * trailActive * 1.25;
+
         float halo = exp(-d / max(1.0, headRadius * (2.0 + glow * 1.8)));
         float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.55));
         color += plasmaColor.rgb * halo * (0.45 + glow * 0.75);
