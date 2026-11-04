@@ -58,6 +58,11 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-32
+- Add configurable pulse interval with radiating orb and orbit-ring effects.
+- Make the default direction cycle clockwise, counterclockwise, then pulse.
+- Retain fixed clockwise and counterclockwise travel modes.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-31
 - Expand wide oval horizontal radius to use more of the virtual desktop.
 
