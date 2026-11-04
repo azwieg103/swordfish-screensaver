@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        22%{?dist}
+Release:        23%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,10 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-23
+- Add tapered, fading GPU comet tails behind each moving orb.
+- Preserve the continuous thin orbit and existing frame-synchronized renderer.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-22
 - Replace the animated Canvas with a GPU fragment-shader renderer for Plasma 6.
 - Compile the shader to Qt QShader format during the CMake build.
