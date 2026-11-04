@@ -21,9 +21,6 @@ WallpaperItem {
     readonly property int orbBrightness: configuration.orbBrightness
     readonly property int orbitSize: configuration.orbitSize
     readonly property int trailLength: configuration.trailLength
-    readonly property int pulseInterval: configuration.pulseInterval
-    readonly property bool pulseEnabled: configuration.pulseEnabled
-    readonly property int pulseIntensity: configuration.pulseIntensity
 
     property rect screenRect: Qt.rect(0, 0, width, height)
     property rect desktopRect: Qt.rect(0, 0, width, height)
@@ -94,9 +91,6 @@ WallpaperItem {
         property real orbBrightness: root.orbBrightness / 100.0
         property real orbCount: Math.max(1, Math.min(8, root.orbs))
         property real trailLength: root.trailLength
-        property real pulseInterval: root.pulseInterval
-        property real pulseIntensity: root.pulseIntensity / 100.0
-        property real pulseEnabled: root.pulseEnabled ? 1.0 : 0.0
         property real speedScale: root.speed / 20.0
         property real shape: root.shape === "circle" ? 1.0 :
                              root.shape === "wide" ? 2.0 :
