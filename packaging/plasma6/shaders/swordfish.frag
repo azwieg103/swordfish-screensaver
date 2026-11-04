@@ -56,28 +56,36 @@ void main()
     float cyclePhase = mod(phase, cycleUnits);
     float animationAlpha = 1.0;
     float motionPhase = 0.0;
+    float orbitCycle = cycleNumber;
 
+    // Keep moving during the fade-out. The completed lap therefore does not
+    // freeze at a monitor edge or reset to the same position after blackout.
     if (cyclePhase < travelUnits) {
         motionPhase = cyclePhase / travelUnits;
     } else if (cyclePhase < travelUnits + fadeUnits) {
-        motionPhase = 1.0;
+        motionPhase = 1.0 + (cyclePhase - travelUnits) / travelUnits;
         animationAlpha = 1.0 - smoothstep(0.0, fadeUnits,
                                           cyclePhase - travelUnits);
     } else if (cyclePhase < travelUnits + fadeUnits + blankUnits) {
         fragColor = vec4(color, 1.0) * qt_Opacity;
         return;
     } else {
+        // Fade back in at the next orbit's randomly selected point. Use the
+        // next cycle's seed here so the position and direction match exactly
+        // when the following visible revolution begins.
+        orbitCycle = cycleNumber + 1.0;
         motionPhase = 0.0;
         animationAlpha = smoothstep(0.0, fadeUnits,
             cyclePhase - travelUnits - fadeUnits - blankUnits);
     }
 
-    // Pick a fresh, repeatable pseudo-random direction for each orbit cycle.
-    // The shared phase keeps all monitor instances moving in sync.
-    float randomDirection = fract(sin(cycleNumber * 127.1 + 311.7) * 43758.5453) < 0.5
-                            ? -1.0 : 1.0;
+    // All monitor instances derive identical direction and starting position
+    // from the shared monotonic clock and the same orbit-cycle number.
+    float directionSeed = fract(sin(orbitCycle * 127.1 + 311.7) * 43758.5453);
+    float randomDirection = directionSeed < 0.5 ? -1.0 : 1.0;
     float motionDirection = direction == 0.0 ? randomDirection : direction;
-    float angleBase = motionDirection * motionPhase * (2.0 * PI);
+    float randomStart = fract(sin(orbitCycle * 269.5 + 183.3) * 24634.6345);
+    float angleBase = motionDirection * (randomStart + motionPhase) * (2.0 * PI);
     vec3 effectTint = plasmaColor.rgb * animationAlpha;
 
     vec2 q = p - center;
