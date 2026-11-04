@@ -75,13 +75,13 @@ WallpaperItem {
     // All wallpaper instances read the same monotonic clock from the native plugin.
     FrameAnimation {
         running: true
-        onTriggered: shader.phase = DisplayGeometry.elapsedSeconds() * root.speed / 10.0
+        onTriggered: shader.phase = DisplayGeometry.elapsedSeconds()
     }
 
     ShaderEffect {
         id: shader
         anchors.fill: parent
-        property real phase: DisplayGeometry.elapsedSeconds() * root.speed / 10.0
+        property real phase: DisplayGeometry.elapsedSeconds()
         property vector2d desktopSize: Qt.vector2d(root.desktopWidth, root.desktopHeight)
         property vector2d screenOrigin: Qt.vector2d(root.screenX, root.screenY)
         property vector2d screenSize: Qt.vector2d(root.width, root.height)
@@ -92,7 +92,8 @@ WallpaperItem {
         property real orbBrightness: root.orbBrightness / 100.0
         property real orbCount: Math.max(1, Math.min(8, root.orbs))
         property real trailLength: root.trailLength
-        property real pulseInterval: root.pulseInterval * root.speed / 10.0
+        property real pulseInterval: root.pulseInterval
+        property real speedScale: root.speed / 20.0
         property real shape: root.shape === "circle" ? 1.0 :
                              root.shape === "wide" ? 2.0 :
                              root.shape === "tall" ? 3.0 : 0.0
