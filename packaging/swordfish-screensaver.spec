@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        20%{?dist}
+Release:        21%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -57,6 +57,12 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-21
+- Drive animation updates with Qt requestAnimationFrame to align with scene composition.
+- Use cooperative Canvas rendering and reduce per-frame orbit path complexity.
+- Remove solid arc overlays that created persistent trails around the moving orbs.
+- Keep two default orbs moving over the continuously visible thin orbit.
+
 * Tue Nov 03 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-20
 - Restore the full oval track using explicit Canvas line paths compatible with Qt threaded rendering.
 - Restore continuous bright track segments around each moving orb.
