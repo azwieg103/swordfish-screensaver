@@ -87,7 +87,34 @@ void main()
 
         float angle = angleBase + float(i) * (2.0 * PI / count);
         vec2 head = center + vec2(rx * cos(angle), ry * sin(angle));
-        float d = length(p - head);
+        vec2 rel = p - head;
+        float d = length(rel);
+
+        // A soft, animated meteor flame streams behind the round orb.
+        // The flame follows the ellipse tangent, so it stays behind the
+        // orb regardless of orbit shape or travel direction.
+        vec2 tangent = normalize(vec2(-rx * sin(angle), ry * cos(angle)) * motionDirection);
+        vec2 normal = vec2(-tangent.y, tangent.x);
+        float flameBack = -dot(rel, tangent);
+        float flameSide = dot(rel, normal);
+        float flameLength = headRadius * (5.0 + trailLength * 0.10);
+        float flameU = flameBack / max(1.0, flameLength);
+        float flicker = sin(flameU * 25.0 - phase * 8.0 + float(i) * 2.1) * 0.22
+                      + sin(flameU * 43.0 + phase * 5.7 + float(i)) * 0.12;
+        float flameWidth = headRadius * (0.78 + 0.25 * sin(flameU * PI))
+                         * (1.0 - 0.66 * clamp(flameU, 0.0, 1.0));
+        float flameCenter = flicker * headRadius * (0.65 + flameU * 0.45);
+        float flameEdge = abs(flameSide - flameCenter);
+        float flameShape = 1.0 - smoothstep(flameWidth * 0.48,
+                                            max(1.0, flameWidth), flameEdge);
+        float flameFade = (1.0 - smoothstep(0.72, 1.0, flameU))
+                        * smoothstep(-0.08, 0.08, flameU);
+        float flame = flameShape * flameFade;
+        vec3 flameColor = mix(plasmaColor.rgb, vec3(1.0, 0.78, 0.38), 0.48);
+        vec3 flameCoreColor = mix(plasmaColor.rgb, vec3(1.0), 0.72);
+        color += flameColor * flame * (0.75 + glow * 0.65) * orbBrightness;
+        float hotCore = flame * (1.0 - smoothstep(0.0, flameWidth * 0.42, flameEdge));
+        color += flameCoreColor * hotCore * 0.75 * orbBrightness;
 
         float behindAngle = mod((angle - pixelAngle) * motionDirection + 2.0 * PI,
                                 2.0 * PI);
