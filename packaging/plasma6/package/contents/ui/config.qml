@@ -23,9 +23,6 @@ Item {
     property alias cfg_orbBrightness: orbBrightness.value
     property alias cfg_orbitSize: orbitSize.value
     property alias cfg_trailLength: trailLength.value
-    property alias cfg_pulseInterval: pulseInterval.value
-    property alias cfg_pulseEnabled: pulseEnabled.checked
-    property alias cfg_pulseIntensity: pulseIntensity.value
 
     implicitWidth: form.implicitWidth
     implicitHeight: form.implicitHeight
@@ -132,21 +129,6 @@ Item {
             Kirigami.FormData.label: i18n("Trail length")
             Controls.Slider { id: trailLength; from: 5; to: 100; stepSize: 5; Layout.fillWidth: true }
             Controls.Label { text: trailLength.value + "%" }
-        }
-        Controls.CheckBox {
-            id: pulseEnabled
-            Kirigami.FormData.label: i18n("Pulse")
-            text: i18n("Enable radiating pulse")
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Pulse intensity")
-            Controls.Slider { id: pulseIntensity; from: 0; to: 200; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: pulseIntensity.value + "%" }
-        }
-        RowLayout {
-            Kirigami.FormData.label: i18n("Pulse interval")
-            Controls.Slider { id: pulseInterval; from: 10; to: 180; stepSize: 5; Layout.fillWidth: true }
-            Controls.Label { text: pulseInterval.value + " sec" }
         }
         Controls.SpinBox {
             id: beamWidth
