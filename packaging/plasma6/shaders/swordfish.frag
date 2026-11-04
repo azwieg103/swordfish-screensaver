@@ -14,6 +14,7 @@ layout(std140, binding = 0) uniform buf {
     float orbitSize;
     float beamWidth;
     float glow;
+    float orbBrightness;
     float orbCount;
     float shape;
     float direction;
@@ -102,8 +103,10 @@ void main()
 
         float halo = exp(-d / max(1.0, headRadius * (2.0 + glow * 1.8)));
         float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.55));
-        color += plasmaColor.rgb * halo * (0.45 + glow * 0.75) * pulseBoost;
-        color += vec3(0.78, 0.96, 1.0) * core * (1.15 + pulse * 2.4);
+        color += plasmaColor.rgb * halo * (0.45 + glow * 0.75)
+                 * pulseBoost * orbBrightness;
+        color += vec3(0.78, 0.96, 1.0) * core
+                 * (1.15 + pulse * 2.4) * orbBrightness;
     }
 
     fragColor = vec4(color, 1.0) * qt_Opacity;
