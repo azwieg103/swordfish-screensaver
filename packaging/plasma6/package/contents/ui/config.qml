@@ -96,15 +96,20 @@ Item {
         Controls.ComboBox {
             id: direction
             Kirigami.FormData.label: i18n("Travel direction")
-            textRole: "text"
-            valueRole: "value"
-            currentIndex: Math.max(0, indexOfValue(root.cfg_direction))
-            onActivated: root.cfg_direction = currentValue
+            // Use a plain string model for maximum compatibility with the
+            // Screen Locking KCM's wallpaper configuration loader.
+            currentIndex: root.cfg_direction === "clockwise" ? 1 :
+                          root.cfg_direction === "counterclockwise" ? 2 : 0
+            onActivated: {
+                root.cfg_direction = index === 1 ? "clockwise" :
+                                     index === 2 ? "counterclockwise" : "random"
+            }
             model: [
-                { text: i18n("Random (changes every orbit)"), value: "random" },
-                { text: i18n("Clockwise"), value: "clockwise" },
-                { text: i18n("Counterclockwise"), value: "counterclockwise" }
+                i18n("Random"),
+                i18n("Clockwise"),
+                i18n("Counterclockwise")
             ]
+            popup.height: Math.min(implicitContentHeight, 3 * 40)
         }
         Controls.SpinBox {
             id: orbs
