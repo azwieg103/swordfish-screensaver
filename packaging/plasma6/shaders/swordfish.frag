@@ -17,6 +17,7 @@ layout(std140, binding = 0) uniform buf {
     float orbBrightness;
     float orbCount;
     float trailLength;
+    float flameIntensity;
     float speedScale;
     float shape;
     float direction;
@@ -57,9 +58,11 @@ void main()
         return;
     }
 
-    float motionDirection = direction == 0.0
-                            ? (mod(cycleNumber, 2.0) < 1.0 ? 1.0 : -1.0)
-                            : direction;
+    // Pick a fresh, repeatable pseudo-random direction for each orbit cycle.
+    // The shared phase keeps all monitor instances moving in sync.
+    float randomDirection = fract(sin(cycleNumber * 127.1 + 311.7) * 43758.5453) < 0.5
+                            ? -1.0 : 1.0;
+    float motionDirection = direction == 0.0 ? randomDirection : direction;
     float angleBase = motionDirection * (cyclePhase / travelUnits) * (2.0 * PI);
 
     vec2 q = p - center;
@@ -112,9 +115,11 @@ void main()
         float flame = flameShape * flameFade;
         vec3 flameColor = mix(plasmaColor.rgb, vec3(1.0, 0.78, 0.38), 0.48);
         vec3 flameCoreColor = mix(plasmaColor.rgb, vec3(1.0), 0.72);
-        color += flameColor * flame * (0.75 + glow * 0.65) * orbBrightness;
+        float flamePower = clamp(flameIntensity / 100.0, 0.0, 2.0);
+        color += flameColor * flame * (0.75 + glow * 0.65)
+                 * orbBrightness * flamePower;
         float hotCore = flame * (1.0 - smoothstep(0.0, flameWidth * 0.42, flameEdge));
-        color += flameCoreColor * hotCore * 0.75 * orbBrightness;
+        color += flameCoreColor * hotCore * 0.75 * orbBrightness * flamePower;
 
         float behindAngle = mod((angle - pixelAngle) * motionDirection + 2.0 * PI,
                                 2.0 * PI);
