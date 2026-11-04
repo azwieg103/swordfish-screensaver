@@ -57,7 +57,7 @@ Item {
         }
         Controls.ComboBox {
             id: green
-            Kirigami.FormData.label: i18n("Green palette")
+            Kirigami.FormData.label: i18n("Color theme")
             textRole: "text"
             valueRole: "value"
             currentIndex: Math.max(0, indexOfValue(root.cfg_green))
@@ -70,7 +70,8 @@ Item {
                 { text: i18n("Ice blue"), value: "ice" },
                 { text: i18n("Amber"), value: "amber" },
                 { text: i18n("Violet"), value: "violet" },
-                { text: i18n("White"), value: "white" }
+                { text: i18n("White"), value: "white" },
+                { text: i18n("Fireball (red/orange)"), value: "fireball" }
             ]
         }
         RowLayout {
