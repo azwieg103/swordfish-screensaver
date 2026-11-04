@@ -20,6 +20,7 @@ WallpaperItem {
     readonly property int glow: configuration.glow
     readonly property int orbBrightness: configuration.orbBrightness
     readonly property int orbitSize: configuration.orbitSize
+    readonly property int trailLength: configuration.trailLength
 
     property rect screenRect: Qt.rect(0, 0, width, height)
     property rect desktopRect: Qt.rect(0, 0, width, height)
@@ -29,7 +30,7 @@ WallpaperItem {
     property real desktopHeight: Math.max(1, desktopRect.height)
     property date currentDate: new Date()
     property string dateLabel: Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
-    property string timeLabel: Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
+    property string timeLabel: Qt.formatTime(currentDate, root.clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
 
     property var palette: ({
         "classic": Qt.rgba(0.28, 1.0, 0.035, 1),
@@ -41,7 +42,7 @@ WallpaperItem {
         "violet": Qt.rgba(0.72, 0.35, 1.0, 1),
         "white": Qt.rgba(0.88, 1.0, 1.0, 1)
     })
-    property color plasmaColor: palette[cfg_green] || palette.classic
+    property color plasmaColor: palette[root.green] || palette.classic
 
     function refreshDisplayGeometry() {
         const nextScreen = DisplayGeometry.screenGeometry(root)
@@ -55,7 +56,7 @@ WallpaperItem {
     function updateClock() {
         currentDate = new Date()
         dateLabel = Qt.formatDate(currentDate, Qt.locale().dateFormat(Locale.LongFormat))
-        timeLabel = Qt.formatTime(currentDate, cfg_clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
+        timeLabel = Qt.formatTime(currentDate, root.clock24Hour ? "HH:mm:ss" : "h:mm:ss AP")
     }
 
     Timer {
@@ -89,6 +90,7 @@ WallpaperItem {
         property real glow: root.glow / 100.0
         property real orbBrightness: root.orbBrightness / 100.0
         property real orbCount: Math.max(1, Math.min(8, root.orbs))
+        property real trailLength: root.trailLength
         property real shape: root.shape === "circle" ? 1.0 :
                              root.shape === "wide" ? 2.0 :
                              root.shape === "tall" ? 3.0 : 0.0
