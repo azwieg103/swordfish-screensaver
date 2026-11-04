@@ -17,6 +17,7 @@ layout(std140, binding = 0) uniform buf {
     float orbBrightness;
     float orbCount;
     float trailLength;
+    float pulseInterval;
     float shape;
     float direction;
 };
@@ -50,7 +51,6 @@ void main()
     float line = 1.0 - smoothstep(lineWidth, lineWidth + 1.5, orbitDistance);
 
     vec3 color = vec3(0.003, 0.006, 0.014);
-    color += plasmaColor.rgb * line * (0.20 + glow * 0.16);
 
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
     const float pulseUnits = 4.0;
@@ -61,7 +61,7 @@ void main()
     float cycleUnits = travelUnits + pulseUnits;
     float cyclePhase = mod(phase, cycleUnits);
     bool pulseStage = cyclePhase >= travelUnits;
-    float legPhase = mod(cyclePhase, legUnits);
+    float legPhase = pulseStage ? legUnits : mod(cyclePhase, legUnits);
     float legIndex = cyclePhase < legUnits ? 0.0 : 1.0;
     float motionDirection = direction == 0.0
                             ? (legIndex < 0.5 ? 1.0 : -1.0)
@@ -72,6 +72,10 @@ void main()
                   ? exp(-pow((pulsePhase - 1.15) / 0.48, 2.0))
                   : 0.0;
     float pulseBoost = 1.0 + pulse * 3.2;
+    // The continuous orbit brightens and blooms outward during the pulse.
+    float radiatingLineWidth = lineWidth + pulse * 7.0;
+    line = 1.0 - smoothstep(radiatingLineWidth, radiatingLineWidth + 2.0, orbitDistance);
+    color += plasmaColor.rgb * line * (0.20 + glow * 0.16) * (1.0 + pulse * 4.0);
     float headRadius = 8.0 + beamWidth * 0.35 + pulse * 12.0;
     float pixelAngle = atan(q.y / max(ry, 1.0), q.x / max(rx, 1.0));
 
