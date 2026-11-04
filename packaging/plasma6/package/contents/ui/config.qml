@@ -20,6 +20,7 @@ Item {
     property string cfg_shape: "oval"
     property string cfg_direction: "clockwise"
     property alias cfg_glow: glow.value
+    property alias cfg_orbBrightness: orbBrightness.value
     property alias cfg_orbitSize: orbitSize.value
 
     implicitWidth: form.implicitWidth
@@ -111,6 +112,11 @@ Item {
             Kirigami.FormData.label: i18n("Glow intensity")
             Controls.Slider { id: glow; from: 10; to: 100; stepSize: 5; Layout.fillWidth: true }
             Controls.Label { text: glow.value + "%" }
+        }
+        RowLayout {
+            Kirigami.FormData.label: i18n("Orb brightness")
+            Controls.Slider { id: orbBrightness; from: 10; to: 200; stepSize: 5; Layout.fillWidth: true }
+            Controls.Label { text: orbBrightness.value + "%" }
         }
         RowLayout {
             Kirigami.FormData.label: i18n("Orbit size")
