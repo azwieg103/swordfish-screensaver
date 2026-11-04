@@ -16,6 +16,7 @@ layout(std140, binding = 0) uniform buf {
     float glow;
     float orbBrightness;
     float orbCount;
+    float trailLength;
     float shape;
     float direction;
 };
@@ -45,12 +46,10 @@ void main()
     float lineWidth = 0.7 + beamWidth * 0.10;
     float line = 1.0 - smoothstep(lineWidth, lineWidth + 1.5, orbitDistance);
 
-    vec3 base = vec3(0.003, 0.006, 0.014);
-    vec3 color = base + plasmaColor.rgb * line * (0.20 + glow * 0.16);
+    vec3 color = vec3(0.003, 0.006, 0.014);
+    color += plasmaColor.rgb * line * (0.20 + glow * 0.16);
 
     float count = clamp(floor(orbCount + 0.5), 1.0, 8.0);
-    // Four complete laps in the configured direction, four in reverse,
-    // then a short stationary pulse before the sequence repeats.
     const float lapUnits = 18.0;
     const float travelUnits = 4.0 * lapUnits;
     const float pulseUnits = 4.0;
@@ -70,7 +69,14 @@ void main()
     float pulseBoost = 1.0 + pulse * 2.5;
     float headRadius = 8.0 + beamWidth * 0.35;
     float pixelAngle = atan(q.y / max(ry, 1.0), q.x / max(rx, 1.0));
-    const float tailLength = 0.72;
+
+    // Trail length is an arc along the orbit, not a straight tangent.
+    // This keeps the comet plume attached to the orbit on both oval and circle shapes.
+    float trailAngle = mix(0.08, 1.35, clamp(trailLength / 100.0, 0.0, 1.0));
+    float trailWidth = max(1.5, lineWidth * (1.8 + glow * 1.4));
+    float trailCoreWidth = max(1.0, trailWidth * 0.38);
+    float trailHalo = exp(-pow(orbitDistance / trailWidth, 2.0));
+    float trailCore = exp(-pow(orbitDistance / trailCoreWidth, 2.0));
 
     for (int i = 0; i < 8; ++i) {
         if (float(i) >= count)
@@ -80,35 +86,25 @@ void main()
         vec2 head = center + vec2(rx * cos(angle), ry * sin(angle));
         float d = length(p - head);
 
-        // Build the comet tail in the orb's local tangent frame. This creates
-        // a rounded, tapered plume rather than an angular wedge around the orbit.
-        vec2 tangent = normalize(vec2(-rx * sin(angle), ry * cos(angle)))
-                       * motionDirection;
-        vec2 relative = p - head;
-        float along = dot(relative, tangent);
-        float across = abs(relative.x * tangent.y - relative.y * tangent.x);
-        float tailLengthPx = max(42.0, min(rx, ry) * 0.105);
-        float tailProgress = clamp(-along / tailLengthPx, 0.0, 1.0);
-        float tailActive = (1.0 - smoothstep(-2.0, 1.5, along))
-                           * smoothstep(-tailLengthPx - 3.0, -tailLengthPx, along);
-        float taper = mix(0.8, 0.035, pow(tailProgress, 0.82));
-        float tailWidth = max(1.0, (headRadius * (1.15 + glow * 1.35)) * taper);
-        float tailCore = exp(-pow(across / max(0.8, tailWidth * 0.42), 2.0));
-        float tailHalo = exp(-pow(across / max(1.0, tailWidth * 2.3), 2.0));
-        float tailFade = pow(max(0.0, 1.0 - tailProgress), 1.15);
+        // Positive angular distance behind the moving head, following the ellipse.
+        float behindAngle = mod((angle - pixelAngle) * motionDirection + 2.0 * PI,
+                                2.0 * PI);
+        float trailProgress = behindAngle / trailAngle;
+        float trailActive = 1.0 - smoothstep(0.94, 1.0, trailProgress);
+        float tailFade = pow(max(0.0, 1.0 - trailProgress), 0.72);
+        float trailMask = trailActive * tailFade;
 
-        color += plasmaColor.rgb * tailHalo * tailFade * tailActive
-                 * (0.65 + glow * 0.85) * pulseBoost;
-        color += mix(plasmaColor.rgb, vec3(0.72, 0.96, 1.0), 0.22)
-                 * tailCore * tailFade * tailActive * (1.1 + pulse * 1.7);
+        color += plasmaColor.rgb * trailHalo * trailMask
+                 * (0.55 + glow * 0.85) * pulseBoost * orbBrightness;
+        color += plasmaColor.rgb * trailCore * trailMask
+                 * (0.65 + pulse * 0.8) * orbBrightness;
 
-        // Concentric radial falloff keeps the orb itself perfectly round.
+        // Radial falloff keeps every orb round; its color follows the selected palette.
         float halo = exp(-pow(d / max(1.0, headRadius * (2.0 + glow * 1.8)), 2.0));
         float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.48));
         color += plasmaColor.rgb * halo * (0.45 + glow * 0.75)
                  * pulseBoost * orbBrightness;
-        color += vec3(0.78, 0.96, 1.0) * core
-                 * (1.15 + pulse * 2.4) * orbBrightness;
+        color += plasmaColor.rgb * core * (1.35 + pulse * 1.4) * orbBrightness;
     }
 
     fragColor = vec4(color, 1.0) * qt_Opacity;
