@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        41%{?dist}
+Release:        42%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,6 +58,10 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-42
+- Use a plain string model for travel direction in the Screen Locking configuration UI.
+- Keep Random, Clockwise, and Counterclockwise explicitly selectable.
+
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-41
 - Keep orbit motion continuous through fade-out and blackout instead of resetting to the same point.
 - Randomize the next visible orbit's starting position and direction while preserving monitor synchronization.
