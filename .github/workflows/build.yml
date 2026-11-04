@@ -279,6 +279,10 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/rpms"
           docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" "$IMAGE" bash -euxc '
+            dnf install -y dnf-plugins-core || true
+            dnf install -y epel-release || dnf install -y oracle-epel-release-el10
+            dnf config-manager --set-enabled crb || dnf config-manager --set-enabled ol10_codeready_builder || true
+            dnf makecache
             dnf install -y rpm-build cmake gcc-c++ git make extra-cmake-modules libplasma-devel kf6-kcoreaddons-devel qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtshadertools-devel mesa-libGL-devel libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel tar gzip
             cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release
             cmake --build /tmp/build --parallel
