@@ -61,6 +61,15 @@ void main()
         vec2 head = center + vec2(rx * cos(angle), ry * sin(angle));
         float d = length(p - head);
 
+        // Each comet flashes briefly at staggered intervals, followed by a
+        // softer afterglow. The shared phase keeps all monitor instances aligned.
+        float pulseCycle = mod(phase + float(i) * 6.1, 18.0);
+        float flash = exp(-pow((pulseCycle - 0.65) / 0.22, 2.0));
+        float afterglow = exp(-max(0.0, pulseCycle - 0.65) * 2.0)
+                          * (1.0 - smoothstep(0.65, 1.2, pulseCycle));
+        float pulse = clamp(flash + afterglow * 0.35, 0.0, 1.0);
+        float pulseBoost = 1.0 + pulse * 1.8;
+
         // A tapered arc follows the orbit behind each moving head.
         // The thin base orbit remains visible underneath the comet tail.
         float trailAngle = mod(direction * (angle - pixelAngle) + 2.0 * PI,
@@ -76,14 +85,14 @@ void main()
         float tailGlow = exp(-orbitDistance / max(1.0, tailGlowWidth * 2.5));
 
         color += plasmaColor.rgb * tailGlow * trailFade * trailActive
-                 * (0.75 + glow * 0.9);
+                 * (0.75 + glow * 0.9) * pulseBoost;
         color += mix(plasmaColor.rgb, vec3(0.72, 0.96, 1.0), 0.28)
-                 * tailCore * trailFade * trailActive * 1.25;
+                 * tailCore * trailFade * trailActive * (1.25 + pulse * 1.9);
 
         float halo = exp(-d / max(1.0, headRadius * (2.0 + glow * 1.8)));
         float core = exp(-d * d / max(1.0, headRadius * headRadius * 0.55));
-        color += plasmaColor.rgb * halo * (0.45 + glow * 0.75);
-        color += vec3(0.75, 0.95, 1.0) * core * 0.85;
+        color += plasmaColor.rgb * halo * (0.45 + glow * 0.75) * pulseBoost;
+        color += vec3(0.75, 0.95, 1.0) * core * (0.85 + pulse * 1.8);
     }
 
     fragColor = vec4(color, 1.0) * qt_Opacity;
