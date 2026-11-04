@@ -140,7 +140,20 @@ WallpaperItem {
             const trackWidth = 0.7 + root.cfg_beamWidth / 10.0
             const glowLevel = root.cfg_glow / 100.0
             ctx.beginPath()
-            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
+            // Build the closed oval with explicit line segments. Qt's Canvas
+            // threaded renderer does not consistently render ellipse() paths
+            // on every Plasma/Qt build; this keeps the connecting track visible.
+            const trackSegments = 360
+            for (let segment = 0; segment <= trackSegments; ++segment) {
+                const a = segment * Math.PI * 2 / trackSegments
+                const px = rx * Math.cos(a)
+                const py = ry * Math.sin(a)
+                if (segment === 0)
+                    ctx.moveTo(px, py)
+                else
+                    ctx.lineTo(px, py)
+            }
+            ctx.closePath()
             ctx.strokeStyle = Qt.rgba(
                 glow.r * (0.28 + glowLevel * 0.12),
                 glow.g * (0.28 + glowLevel * 0.12),
@@ -156,7 +169,16 @@ WallpaperItem {
                 const center = orbAngles[i]
                 const halfSpan = 0.42
                 ctx.beginPath()
-                ctx.ellipse(0, 0, rx, ry, 0, center - halfSpan, center + halfSpan)
+                const arcSegments = 32
+                for (let segment = 0; segment <= arcSegments; ++segment) {
+                    const a = center - halfSpan + (2 * halfSpan * segment / arcSegments)
+                    const px = rx * Math.cos(a)
+                    const py = ry * Math.sin(a)
+                    if (segment === 0)
+                        ctx.moveTo(px, py)
+                    else
+                        ctx.lineTo(px, py)
+                }
                 ctx.strokeStyle = Qt.rgba(
                     glow.r * (0.55 + glowLevel * 0.45),
                     glow.g * (0.55 + glowLevel * 0.45),
