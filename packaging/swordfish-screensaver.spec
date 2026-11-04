@@ -1,6 +1,6 @@
 Name:           swordfish-screensaver
 Version:        0.2.1
-Release:        29%{?dist}
+Release:        30%{?dist}
 Summary:        Multi-monitor circular plasma animation
 License:        GPL-3.0-or-later
 URL:            https://github.com/azwieg103/swordfish-screensaver
@@ -58,8 +58,10 @@ cp -a packaging/plasma6/package/. %{buildroot}%{_datadir}/plasma/wallpapers/org.
 %{_libdir}/qt6/qml/org/zwiegnet/swordfish/geometry/libswordfishgeometryplugin.so
 
 %changelog
-* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-29
-- Replace angular comet wedge with a rounded orb and tapered tangent-frame plume.
+* Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-30
+- Follow the orbit path with a connected, curved comet trail.
+- Use the selected palette consistently for orb cores and trails.
+- Add a configurable comet trail length slider.
 
 * Wed Nov 04 2026 Open Source Contributors <noreply@example.invalid> - 0.2.1-28
 - Bind wallpaper rendering properties to Plasma's live configuration map.
