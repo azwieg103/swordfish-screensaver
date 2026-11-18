@@ -277,9 +277,10 @@ jobs:
       - name: Build and test RPM
         env:
           IMAGE: ${{ matrix.image }}
+          RPM_RELEASE: ${{ github.run_number }}
         run: |
           mkdir -p "$RUNNER_TEMP/rpms"
-          docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" "$IMAGE" bash -euxc '
+          docker run --rm -e RPM_RELEASE="$RPM_RELEASE" -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" "$IMAGE" bash -euxc '
             dnf install -y dnf-plugins-core || true
             dnf install -y epel-release || dnf install -y oracle-epel-release-el10
             dnf config-manager --set-enabled crb || dnf config-manager --set-enabled ol10_codeready_builder || true
@@ -294,7 +295,7 @@ jobs:
             tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.2.1.tar.gz --transform="s,^,swordfish-screensaver-0.2.1/," -C /src .
             cp /src/packaging/swordfish-screensaver.spec /home/builder/rpmbuild/SPECS/
             chown -R builder:builder /home/builder/rpmbuild
-            runuser -u builder -- rpmbuild -ba /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
+            runuser -u builder -- rpmbuild -ba --define "rpm_release ${RPM_RELEASE}" /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
           '
           for rpm in "$RUNNER_TEMP"/rpms/*.rpm; do
@@ -304,6 +305,42 @@ jobs:
         with:
           name: swordfish-rpm-${{ matrix.name }}
           path: ${{ runner.temp }}/rpms/*.rpm
+
+  rpm-publish:
+    name: Publish Enterprise Linux 10 RPM release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [rpm]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download all distribution RPM artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: swordfish-rpm-*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify release assets
+        run: |
+          set -euo pipefail
+          find release-assets -maxdepth 1 -type f -name '*.rpm' -print
+          test "$(find release-assets -maxdepth 1 -type f -name '*.rpm' | wc -l)" -ge 8
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: swordfish-0.2.1-ZWIEGNET.${{ github.run_number }}.el10
+          name: Swordfish Screensaver 0.2.1 - Enterprise Linux 10 build ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          body: |
+            Automated Enterprise Linux 10 RPM rebuild from commit `${{ github.sha }}`.
+
+            Includes binary RPMs and source RPMs built on AlmaLinux 10 for AlmaLinux 10, Rocky Linux 10, Oracle Linux 10, and CentOS Stream 10. Each distribution build is uploaded as a separate asset.
+
+            RPM release number: `${{ github.run_number }}.el10`. A new numbered release is published for every successful push to `main`.
+          files: release-assets/*.rpm
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
