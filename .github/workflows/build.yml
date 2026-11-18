@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   linux:
+    needs: [windows]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -24,6 +25,7 @@ jobs:
           path: build/swordfish-screensaver
 
   kali:
+    needs: [windows]
     name: Kali Rolling build and DEB package
     runs-on: ubuntu-24.04
     container:
@@ -67,6 +69,7 @@ jobs:
           path: swordfish-kali-rolling-amd64.deb
 
   debian-ubuntu:
+    needs: [windows]
     name: DEB package (${{ matrix.os }} ${{ matrix.version }})
     runs-on: ubuntu-24.04
     strategy:
@@ -121,6 +124,7 @@ jobs:
           path: ${{ runner.temp }}/debs/*.deb
 
   fedora:
+    needs: [windows]
     name: Fedora ${{ matrix.version }} build
     runs-on: ubuntu-24.04
     strategy:
@@ -147,6 +151,7 @@ jobs:
           path: ${{ runner.temp }}/out/swordfish-fedora-*.tar.gz
 
   arch:
+    needs: [windows]
     name: Arch Linux build
     runs-on: ubuntu-24.04
     container:
@@ -169,6 +174,7 @@ jobs:
           path: swordfish-archlinux-x86_64.tar.gz
 
   freebsd:
+    needs: [windows]
     name: FreeBSD ${{ matrix.release }} x86_64
     runs-on: ubuntu-24.04
     strategy:
@@ -197,6 +203,7 @@ jobs:
           path: swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz
 
   macos:
+    needs: [windows]
     name: macOS ${{ matrix.arch }} build
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -237,8 +244,55 @@ jobs:
           name: swordfish-macos-${{ matrix.arch }}
           path: swordfish-macos-${{ matrix.arch }}.zip
 
+  almalinux10:
+    name: AlmaLinux 10 RPM (priority 1)
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: AlmaLinux-10, image: almalinux:10 }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build and test RPM
+        env:
+          IMAGE: ${{ matrix.image }}
+          RPM_RELEASE: ${{ github.run_number }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/rpms"
+          docker run --rm -e RPM_RELEASE="$RPM_RELEASE" -v "$PWD:/src:ro" -v "$RUNNER_TEMP/rpms:/rpms" "$IMAGE" bash -euxc '
+            dnf install -y dnf-plugins-core || true
+            dnf install -y epel-release || dnf install -y oracle-epel-release-el10
+            dnf config-manager --set-enabled crb || dnf config-manager --set-enabled ol10_codeready_builder || true
+            dnf makecache
+            dnf install -y rpm-build cmake gcc-c++ git make extra-cmake-modules libplasma-devel kf6-kcoreaddons-devel qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtshadertools-devel mesa-libGL-devel libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel tar gzip
+            cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release
+            cmake --build /tmp/build --parallel
+            ctest --test-dir /tmp/build --output-on-failure
+            /tmp/build/swordfish-screensaver --help
+            useradd -m builder
+            mkdir -p /home/builder/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+            tar --exclude=.git --exclude=build --exclude=dist -czf /home/builder/rpmbuild/SOURCES/swordfish-screensaver-0.2.1.tar.gz --transform="s,^,swordfish-screensaver-0.2.1/," -C /src .
+            cp /src/packaging/swordfish-screensaver.spec /home/builder/rpmbuild/SPECS/
+            chown -R builder:builder /home/builder/rpmbuild
+            runuser -u builder -- rpmbuild -ba --define "rpm_release ${RPM_RELEASE}" /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
+            cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
+            cp /home/builder/rpmbuild/SRPMS/*.src.rpm /rpms/
+          '
+          for rpm in "$RUNNER_TEMP"/rpms/*.rpm; do
+            case "$rpm" in
+              *.src.rpm) mv "$rpm" "${rpm%.src.rpm}-${{ matrix.name }}.src.rpm" ;;
+              *.rpm) mv "$rpm" "${rpm%.rpm}-${{ matrix.name }}.rpm" ;;
+            esac
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: swordfish-rpm-${{ matrix.name }}
+          path: ${{ runner.temp }}/rpms/*.rpm
+
   windows:
     runs-on: windows-2025
+    needs: [almalinux10]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install SDL2 (static)
@@ -262,7 +316,8 @@ jobs:
           path: swordfish-windows-x64.zip
 
   rpm:
-    name: RPM build (${{ matrix.name }})
+    name: Other Enterprise Linux RPM builds (${{ matrix.name }})
+    needs: [windows]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -271,7 +326,6 @@ jobs:
           - { name: CentOS-Stream-10, image: quay.io/centos/centos:stream10 }
           - { name: Rocky-10, image: rockylinux/rockylinux:10 }
           - { name: OracleLinux-10, image: oraclelinux:10 }
-          - { name: AlmaLinux-10, image: almalinux:10 }
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build and test RPM
@@ -313,7 +367,7 @@ jobs:
   rpm-publish:
     name: Publish Enterprise Linux 10 RPM release
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [rpm]
+    needs: [almalinux10, rpm]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
