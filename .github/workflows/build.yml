@@ -11,14 +11,14 @@ jobs:
   linux:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake g++ git libsdl2-dev libgl-dev libx11-dev libxext-dev libxrandr-dev libxrender-dev libxfixes-dev libxi-dev libxcursor-dev libxinerama-dev
       - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSWORDFISH_BUILD_PLASMA6=OFF
       - run: cmake --build build --parallel
       - run: ctest --test-dir build --output-on-failure
       - run: ./build/swordfish-screensaver --help
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-linux
           path: build/swordfish-screensaver
@@ -29,7 +29,7 @@ jobs:
     container:
       image: kalilinux/kali-rolling:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install build dependencies
         run: |
           apt-get update
@@ -61,7 +61,7 @@ jobs:
           } > "dist/$PKG/DEBIAN/control"
           dpkg-deb --root-owner-group --build "dist/$PKG" "swordfish-kali-rolling-amd64.deb"
           dpkg-deb --info swordfish-kali-rolling-amd64.deb
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-kali-rolling-deb
           path: swordfish-kali-rolling-amd64.deb
@@ -79,7 +79,7 @@ jobs:
           - { os: Debian, version: "12", image: debian:12 }
           - { os: Debian, version: "13", image: debian:13 }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build and package DEB
         env:
           IMAGE: ${{ matrix.image }}
@@ -115,7 +115,7 @@ jobs:
             dpkg-deb --root-owner-group --build "/tmp/pkg/$pkg" "/out/swordfish-$DISTRO-$DISTRO_VERSION-$arch.deb"
             dpkg-deb --info "/out/swordfish-$DISTRO-$DISTRO_VERSION-$arch.deb"
           '
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-${{ matrix.os }}-${{ matrix.version }}-deb
           path: ${{ runner.temp }}/debs/*.deb
@@ -128,7 +128,7 @@ jobs:
       matrix:
         version: ["43", "44"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build and test in Fedora
         run: |
           mkdir -p "$RUNNER_TEMP/out"
@@ -141,7 +141,7 @@ jobs:
             install -m 0755 /tmp/build/swordfish-screensaver /out/
             tar -czf "/out/swordfish-fedora-${{ matrix.version }}-x86_64.tar.gz" -C /out swordfish-screensaver
           '
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-fedora-${{ matrix.version }}
           path: ${{ runner.temp }}/out/swordfish-fedora-*.tar.gz
@@ -152,7 +152,7 @@ jobs:
     container:
       image: archlinux:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build and test
         run: |
           pacman -Syu --noconfirm --needed base-devel cmake git sdl2 mesa libx11 libxext libxrandr libxrender libxfixes libxi libxcursor libxinerama
@@ -163,7 +163,7 @@ jobs:
           mkdir -p dist
           install -m 0755 build/swordfish-screensaver dist/
           tar -czf swordfish-archlinux-x86_64.tar.gz -C dist swordfish-screensaver
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-archlinux
           path: swordfish-archlinux-x86_64.tar.gz
@@ -176,8 +176,8 @@ jobs:
       matrix:
         release: ["14.3", "15.0"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: vmactions/freebsd-vm@v1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: vmactions/freebsd-vm@811efaaac0668df8bfb8308c3ec997b5ab50037b # v1
         with:
           release: ${{ matrix.release }}
           usesh: true
@@ -191,7 +191,7 @@ jobs:
             mkdir -p stage/usr/local/bin
             install -m 755 build/swordfish-screensaver stage/usr/local/bin/
             tar -czf swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz -C stage .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-freebsd-${{ matrix.release }}-amd64
           path: swordfish-freebsd-${{ matrix.release }}-amd64.tar.gz
@@ -206,7 +206,7 @@ jobs:
           - { arch: arm64, runner: macos-26 }
           - { arch: x86_64, runner: macos-26-intel }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: brew install cmake ninja
       - name: Configure static SDL2
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} -DSWORDFISH_FETCH_SDL2=ON
@@ -232,7 +232,7 @@ jobs:
           </dict></plist>
           PLIST
           ditto -c -k --sequesterRsrc --keepParent "$APP" "swordfish-macos-${{ matrix.arch }}.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-macos-${{ matrix.arch }}
           path: swordfish-macos-${{ matrix.arch }}.zip
@@ -240,7 +240,7 @@ jobs:
   windows:
     runs-on: windows-2025
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install SDL2 (static)
         run: vcpkg install --triplet x64-windows-static
       - name: Configure
@@ -256,7 +256,7 @@ jobs:
           Copy-Item build/Release/swordfish-screensaver.exe dist/
           Copy-Item README.md, LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath swordfish-windows-x64.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-windows-x64
           path: swordfish-windows-x64.zip
@@ -273,7 +273,7 @@ jobs:
           - { name: OracleLinux-10, image: oraclelinux:10 }
           - { name: AlmaLinux-10, image: almalinux:10 }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build and test RPM
         env:
           IMAGE: ${{ matrix.image }}
@@ -300,7 +300,7 @@ jobs:
           for rpm in "$RUNNER_TEMP"/rpms/*.rpm; do
             mv "$rpm" "${rpm%.rpm}-${{ matrix.name }}.rpm"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: swordfish-rpm-${{ matrix.name }}
           path: ${{ runner.temp }}/rpms/*.rpm
@@ -312,12 +312,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: swordfish-*
           path: release-assets
           merge-multiple: true
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           generate_release_notes: true
           files: |
