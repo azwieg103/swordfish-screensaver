@@ -53,11 +53,11 @@ GitHub Actions builds and tests the platforms below. A passing CI job confirms t
 
 ### Published releases
 
-When a version is released, download the asset matching your operating system from:
+Enterprise Linux 10 RPM releases are published automatically after every successful push to `main`. Each build receives a unique RPM release number and a dedicated GitHub Release containing binary RPMs and source RPMs for AlmaLinux 10, Rocky Linux 10, Oracle Linux 10, and CentOS Stream 10. The RPM release is published only after all four distribution builds succeed.
+
+The existing cross-platform release workflow remains available for versioned `v*` tags. Download the package matching your operating system from:
 
 **[Swordfish Screensaver — GitHub Releases](https://github.com/azwieg103/swordfish-screensaver/releases)**
-
-The release workflow runs when a `v*` tag is pushed and publishes assets only after all required platform jobs succeed. If no release is published yet, use the Actions artifacts below.
 
 ### CI artifacts
 
