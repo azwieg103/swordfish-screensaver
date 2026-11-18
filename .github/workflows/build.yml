@@ -297,9 +297,13 @@ jobs:
             chown -R builder:builder /home/builder/rpmbuild
             runuser -u builder -- rpmbuild -ba --define "rpm_release ${RPM_RELEASE}" /home/builder/rpmbuild/SPECS/swordfish-screensaver.spec
             cp /home/builder/rpmbuild/RPMS/x86_64/*.rpm /rpms/
+            cp /home/builder/rpmbuild/SRPMS/*.src.rpm /rpms/
           '
           for rpm in "$RUNNER_TEMP"/rpms/*.rpm; do
-            mv "$rpm" "${rpm%.rpm}-${{ matrix.name }}.rpm"
+            case "$rpm" in
+              *.src.rpm) mv "$rpm" "${rpm%.src.rpm}-${{ matrix.name }}.src.rpm" ;;
+              *.rpm) mv "$rpm" "${rpm%.rpm}-${{ matrix.name }}.rpm" ;;
+            esac
           done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
