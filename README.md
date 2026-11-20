@@ -34,6 +34,7 @@ GitHub Actions builds and tests the platforms below. A passing CI job confirms t
 | Oracle Linux 10 (x86_64) | Native package | `.rpm` |
 | CentOS Stream 10 (x86_64) | Native package | `.rpm` |
 | Fedora 43, 44 (x86_64) | Tested executable archive | `.tar.gz` |
+| openSUSE Leap 16.0, Tumbleweed (x86_64) | Tested executable archive | `.tar.gz` |
 | Arch Linux (x86_64) | Tested executable archive | `.tar.gz` |
 | FreeBSD 14.3, 15.0 (x86_64) | Tested executable archive | `.tar.gz` |
 | macOS 26 Intel and Apple Silicon | Application bundle | `.zip` containing `.app` |
@@ -43,7 +44,7 @@ GitHub Actions builds and tests the platforms below. A passing CI job confirms t
 **Important distinctions**
 
 - Ubuntu, Debian, Kali, and Enterprise Linux 10 produce installable package-manager packages.
-- Fedora, Arch Linux, and FreeBSD currently receive tested executable archives, not native RPM, Pacman, or FreeBSD `pkg` packages.
+- Fedora, openSUSE, Arch Linux, and FreeBSD currently receive tested executable archives, not native RPM, Pacman, or FreeBSD `pkg` packages.
 - The macOS download is an SDL application bundle, not a native `.saver` module or System Settings screen-saver extension.
 - The Windows download is a standalone `.exe`, not a native Windows `.scr` screensaver or installer.
 - The KDE Plasma 6 Screen Locking background integration is included in the EL10 RPM builds. Other platform builds currently provide the portable SDL2/OpenGL application.
@@ -82,6 +83,7 @@ Artifact names:
 | Oracle Linux 10 | `swordfish-rpm-OracleLinux-10` |
 | CentOS Stream 10 | `swordfish-rpm-CentOS-Stream-10` |
 | Fedora 43 / 44 | `swordfish-fedora-43` / `swordfish-fedora-44` |
+| openSUSE Tumbleweed / Leap 16.0 | `swordfish-opensuse-tumbleweed` / `swordfish-opensuse-leap-16.0` |
 | Arch Linux | `swordfish-archlinux` |
 | FreeBSD 14.3 / 15.0 | `swordfish-freebsd-14.3-amd64` / `swordfish-freebsd-15.0-amd64` |
 | macOS Apple Silicon / Intel | `swordfish-macos-arm64` / `swordfish-macos-x86_64` |
@@ -152,6 +154,16 @@ tar -xzf swordfish-fedora-<version>-x86_64.tar.gz
 sudo install -Dm755 swordfish-screensaver /usr/local/bin/swordfish-screensaver
 ```
 
+### openSUSE Leap 16.0 / Tumbleweed
+
+The openSUSE artifacts are tested executable archives, not RPM packages. Install the runtime libraries, extract the artifact ZIP and then the `.tar.gz` archive:
+
+```bash
+sudo zypper refresh
+sudo zypper install SDL2 Mesa-libGL libX11-6 libXext6 libXrandr2 libXrender1 libXfixes3 libXi6 libXcursor1 libXinerama1
+tar -xzf swordfish-opensuse-<tumbleweed-or-leap-16.0>-x86_64.tar.gz
+sudo install -Dm755 swordfish-screensaver /usr/local/bin/swordfish-screensaver
+```
 ### Arch Linux
 
 The Arch artifact is a compressed executable archive, not a Pacman package:
@@ -332,6 +344,14 @@ sudo dnf install -y extra-cmake-modules libplasma-devel kf6-kcoreaddons-devel \
 
 The automated EL10 RPM builds use this Plasma SDK. The non-EL Linux builds currently compile the portable renderer only.
 
+### openSUSE Leap / Tumbleweed
+
+```bash
+sudo zypper refresh
+sudo zypper install -y cmake gcc-c++ git make SDL2-devel Mesa-libGL-devel \
+  libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel \
+  libXi-devel libXcursor-devel libXinerama-devel
+```
 ### Arch Linux
 
 ```bash
@@ -463,7 +483,7 @@ The richer set of color themes and visual controls is currently exposed through 
 - The optional idle launcher supports GNOME's Mutter idle monitor and X11 via `xprintidle`; it does not yet support KDE Wayland.
 - macOS does not yet have a native `.saver` module or System Settings integration.
 - Windows does not yet have a native `.scr` screensaver, preview, or configuration panel.
-- Fedora, Arch Linux, and FreeBSD artifacts are executable archives, not native distribution packages.
+- Fedora, openSUSE, Arch Linux, and FreeBSD artifacts are executable archives, not native distribution packages.
 - Solaris 11.4 has a build script, but its build and runtime remain unverified.
 
 ## License and attribution

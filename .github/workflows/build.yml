@@ -150,6 +150,38 @@ jobs:
           name: swordfish-fedora-${{ matrix.version }}
           path: ${{ runner.temp }}/out/swordfish-fedora-*.tar.gz
 
+  opensuse:
+    needs: [windows]
+    name: openSUSE ${{ matrix.name }} build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: tumbleweed, image: opensuse/tumbleweed }
+          - { name: leap-16.0, image: opensuse/leap:16.0 }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build and test in openSUSE
+        env:
+          IMAGE: ${{ matrix.image }}
+          DISTRO: ${{ matrix.name }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          docker run --rm -e DISTRO -v "$PWD:/src:ro" -v "$RUNNER_TEMP/out:/out" "$IMAGE" bash -euxc '
+            zypper --non-interactive refresh
+            zypper --non-interactive install --no-recommends cmake gcc-c++ git make SDL2-devel Mesa-libGL-devel libX11-devel libXext-devel libXrandr-devel libXrender-devel libXfixes-devel libXi-devel libXcursor-devel libXinerama-devel
+            cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release -DSWORDFISH_BUILD_PLASMA6=OFF
+            cmake --build /tmp/build --parallel 2
+            ctest --test-dir /tmp/build --output-on-failure
+            /tmp/build/swordfish-screensaver --help
+            install -m 0755 /tmp/build/swordfish-screensaver /out/
+            tar -czf "/out/swordfish-opensuse-${DISTRO}-x86_64.tar.gz" -C /out swordfish-screensaver
+          '
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: swordfish-opensuse-${{ matrix.name }}
+          path: ${{ runner.temp }}/out/swordfish-opensuse-*.tar.gz
   arch:
     needs: [windows]
     name: Arch Linux build
@@ -402,7 +434,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, kali, debian-ubuntu, fedora, arch, freebsd, macos, windows, rpm]
+    needs: [linux, kali, debian-ubuntu, fedora, opensuse, arch, freebsd, macos, windows, rpm]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -421,6 +453,7 @@ jobs:
             release-assets/swordfish-Ubuntu-*.deb
             release-assets/swordfish-Debian-*.deb
             release-assets/swordfish-fedora-*.tar.gz
+            release-assets/swordfish-opensuse-*.tar.gz
             release-assets/swordfish-archlinux-x86_64.tar.gz
             release-assets/swordfish-windows-x64.zip
             release-assets/swordfish-macos-*.zip
